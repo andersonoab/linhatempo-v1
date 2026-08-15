@@ -536,9 +536,26 @@ let editingCaseId=null,editingColor='';
 let allDoneFlag=false;
 
 /* ===================== PERSISTENCIA ===================== */
+let STORAGE_OK=true, _warnedStorage=false;
+const MSG_NOSTORE={
+  pt:'Atenção: o navegador está bloqueando o armazenamento local. Os dados NÃO serão mantidos ao recarregar. Use "Backup JSON" para salvar e "Importar" para restaurar. (Rode o arquivo baixado diretamente no navegador, fora do preview.)',
+  en:'Warning: the browser is blocking local storage. Data will NOT persist on reload. Use "Backup JSON" to save and "Import" to restore. (Open the downloaded file directly in the browser, outside the preview.)',
+  es:'Atención: el navegador está bloqueando el almacenamiento local. Los datos NO se mantendrán al recargar. Use "Backup JSON" para guardar e "Importar" para restaurar. (Abra el archivo descargado directamente en el navegador, fuera del preview.)'
+};
+function storageAvailable(){
+  try{const k='__sonova_probe__';localStorage.setItem(k,'1');localStorage.removeItem(k);return true;}
+  catch(e){return false;}
+}
+function warnNoStorage(){STORAGE_OK=false;if(_warnedStorage)return;_warnedStorage=true;
+  const el=document.getElementById('toast');el.textContent=MSG_NOSTORE[LANG]||MSG_NOSTORE.pt;
+  el.style.maxWidth='680px';el.style.background='#8C321E';el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>{el.classList.remove('show');el.style.background='';el.style.maxWidth='';},7000);}
 function persist(){
-  try{const p=JSON.stringify(state);localStorage.setItem(LS_MAIN,p);localStorage.setItem(LS_BKP,p);}
-  catch(e){if(e&&(e.name==='QuotaExceededError'||e.code===22))toast(t('quota'));}
+  try{const p=JSON.stringify(state);localStorage.setItem(LS_MAIN,p);localStorage.setItem(LS_BKP,p);STORAGE_OK=true;}
+  catch(e){
+    if(e&&(e.name==='QuotaExceededError'||e.code===22)){toast(t('quota'));}
+    else{warnNoStorage();}
+  }
 }
 function loadState(){
   let raw=null;try{raw=localStorage.getItem(LS_MAIN);}catch(e){}
@@ -1038,10 +1055,24 @@ function download(content,fname,mime){const b=new Blob([content],{type:mime});co
 function stamp(){const d=new Date();return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes());}
 
 /* ===================== ADD / IMPORT / RESET ===================== */
-function addProcess(){const modId=filters.mod||'HR-190';
-  const it={code:t('new_code'),mod:modId,en:t('new_name'),pt:t('new_name'),es:t('new_name'),temos:'nao',status:'nao_mapeado',owner:'',notes:'',custom:true,edited:false,oen:t('new_name'),opt:t('new_name'),oes:t('new_name')};
-  state.catalog.push(it);persist();render();toast(t('added_proc'));
-  const card=document.querySelector('.card[data-code="'+CSS.escape(it.code)+'"]');if(card){card.classList.add('open');card.scrollIntoView({behavior:'smooth',block:'center'});}}
+function pad3(n){return String(n).padStart(3,'0');}
+function addProcess(){
+  // Ir para a aba Processos e limpar filtros/busca que esconderiam o novo item
+  VIEW='processos';
+  const modId=(filters.mod&&MODULES.some(m=>m.id===filters.mod))?filters.mod:'HR-190';
+  filters.search='';filters.temos='';filters.status='';
+  const s=document.getElementById('search');if(s)s.value='';
+  // Codigo unico para nao colidir em cliques repetidos
+  const existing=new Set(state.catalog.map(x=>x.code));
+  let n=1,code='HR-000-'+pad3(n);while(existing.has(code)){n++;code='HR-000-'+pad3(n);}
+  const it={code:code,mod:modId,en:t('new_name'),pt:t('new_name'),es:t('new_name'),temos:'nao',status:'nao_mapeado',
+    owner:'',notes:'',custom:true,edited:false,oen:t('new_name'),opt:t('new_name'),oes:t('new_name')};
+  state.catalog.push(it);
+  state.collapsed[modId]=false; // garantir o modulo aberto
+  persist();render();toast(t('added_proc'));
+  const card=document.querySelector('.card[data-code="'+CSS.escape(code)+'"]');
+  if(card){card.classList.add('open');card.scrollIntoView({behavior:'smooth',block:'center'});}
+}
 /* --- Conversao do backup linhatempo (Gerenciador RH - PMO Sonova) --- */
 const LT_COR={azul:'blue',escuro:'navy',petroleo:'teal',claro:'light',bordo:'wine','bordô':'wine',terracota:'rust',
   blue:'blue',navy:'navy',teal:'teal',light:'light',wine:'wine',rust:'rust'};
@@ -1174,6 +1205,7 @@ function bind(){
   const now=new Date();curYear=now.getFullYear();curMonth=now.getMonth();selDay=todayYMD();
   loadState();allDoneFlag=(state.cases.length>0&&state.cases.every(c=>c.status==='concluido'));
   bind();render();
+  if(!storageAvailable()){setTimeout(warnNoStorage,700);}
 })();
 </script>
 </body>
