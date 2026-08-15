@@ -83,6 +83,9 @@
   .module-head h2{font-size:16px;font-weight:700;flex:1;line-height:1.15}
   .module-head .mcount{font-size:12px;font-weight:400;opacity:.92}
   .module-head .chev{transition:.2s}.module.collapsed .chev{transform:rotate(-90deg)}
+  .mh-btn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.45);color:#fff;font-family:'Roboto';
+    font-size:11.5px;font-weight:400;padding:4px 9px;border-radius:5px;cursor:pointer;line-height:1}
+  .mh-btn:hover{background:rgba(255,255,255,.32)}
   .module-mini{height:5px;background:#E4E9ED}.module-mini>span{display:block;height:100%;background:rgba(255,255,255,.9);width:0;transition:width .4s}
   .module-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:13px;
     padding:15px;background:#fff;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px}
@@ -144,16 +147,16 @@
   .case-row:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
   .case-row.dragging{opacity:.45}
   .case-row .ccode{font-size:10px;font-weight:500;color:#fff;background:var(--navy);padding:2px 7px;border-radius:4px;flex:none}
-  .case-row .ctit{flex:1;font-size:13px;color:var(--text)}
+  .case-row .ctit{flex:1;font-size:13px;color:var(--text);min-width:0;overflow-wrap:anywhere}
   .case-row .cresp{font-size:11.5px;color:var(--text2)}
   .case-row .cstat{font-size:10px;padding:2px 9px;border-radius:11px;white-space:nowrap;color:#fff}
 
   /* ===== CALENDAR ===== */
   .cal-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;font-size:11.5px;align-items:center;color:var(--text2)}
   .leg-item{display:flex;align-items:center;gap:5px}.leg-dot{width:12px;height:12px;border-radius:3px}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
   .cal-dow{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);text-align:center;padding:4px 0}
-  .cal-cell{min-height:96px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:5px;display:flex;flex-direction:column;gap:3px}
+  .cal-cell{min-height:96px;min-width:0;background:#fff;border:1px solid var(--border);border-radius:6px;padding:5px;display:flex;flex-direction:column;gap:3px;overflow:hidden}
   .cal-cell.empty{background:transparent;border:none}
   .cal-cell.today{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue) inset}
   .cal-cell.sat{background:#F4F9FC}.cal-cell.sun{background:#FBF3F1}
@@ -161,23 +164,29 @@
   .cal-daynum{font-size:11px;font-weight:500;color:var(--text2);align-self:flex-end}
   .cal-cell.today .cal-daynum{color:var(--blue)}
   .chip{font-size:10.5px;color:#fff;background:var(--blue);border-radius:4px;padding:3px 6px;cursor:grab;
-    line-height:1.25;display:flex;align-items:center;gap:4px;position:relative}
+    line-height:1.25;display:flex;align-items:center;gap:4px;position:relative;max-width:100%;overflow:hidden}
   .chip.light{color:#003C64}.chip.dragging{opacity:.45}
   .chip .chdot{width:9px;height:9px;border-radius:50%;border:1px solid rgba(255,255,255,.7);cursor:pointer;flex:none}
-  .chip .chtxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .chip .chtxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+  .chip .mbadge{font-size:8.5px;font-weight:600;background:rgba(255,255,255,.85);color:#003C64;border-radius:3px;padding:0 3px;line-height:1.4;flex:none}
+  .chip.light .mbadge{background:#003C64;color:#fff}
+  .chip .chx{flex:none;cursor:pointer;font-size:12px;line-height:1;opacity:.75;padding:0 1px}
+  .chip .chx:hover{opacity:1}
+  .chip.hiddencal{opacity:.5}
+  .chip.hiddencal .chtxt{text-decoration:line-through}
   .cal-add{font-size:16px;color:var(--text2);cursor:pointer;text-align:center;opacity:0;transition:.15s}
   .cal-cell:hover .cal-add{opacity:.7}
 
   /* ===== KANBAN ===== */
-  .kb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .kb-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
   .kb-col{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px;min-height:120px}
   .kb-col.dragover{background:#EAF4FB;border-color:var(--blue)}
   .kb-col h3{font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:2px solid}
   .kb-col .kcount{margin-left:auto;font-size:12px;font-weight:400;color:var(--text2)}
-  .kb-card{border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:6px;padding:10px;margin-bottom:9px;background:#fff;cursor:grab}
+  .kb-card{border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:6px;padding:10px;margin-bottom:9px;background:#fff;cursor:grab;overflow:hidden}
   .kb-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.09)}.kb-card.dragging{opacity:.45}
   .kb-card .kcode{font-size:10px;font-weight:500;color:#fff;background:var(--navy);padding:2px 7px;border-radius:4px}
-  .kb-card .ktit{font-size:13px;color:var(--text);margin-top:6px;line-height:1.3}
+  .kb-card .ktit{font-size:13px;color:var(--text);margin-top:6px;line-height:1.3;overflow-wrap:anywhere}
   .kb-card .kmeta{font-size:11px;color:var(--text2);margin-top:5px;display:flex;justify-content:space-between;gap:8px}
   .kb-card.late{border-left-color:var(--late)}
 
@@ -266,6 +275,7 @@
   <select id="fStatus" class="proc-only"></select>
   <select id="fCaseStatus" class="track-only"></select>
   <button class="btn" id="addProcBtn" data-i="btn_add_proc">+ Processo</button>
+  <button class="btn ghost proc-only" id="addModBtn" data-i="btn_add_mod">+ Módulo</button>
   <button class="btn" id="addCaseBtn" data-i="btn_add_case">+ Caso</button>
   <button class="btn ghost track-only" id="bulkBtn" data-i="btn_bulk">Transferir em lote</button>
   <button class="btn ghost proc-only" id="expandAll" data-i="btn_expand">Expandir</button>
@@ -302,6 +312,10 @@
       </div>
       <div class="fld"><label id="lb_obs"></label><textarea id="cmObs"></textarea></div>
       <div class="fld"><label id="lb_cor"></label><div class="swatches" id="cmSwatches"></div></div>
+      <div class="fld"><label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:12.5px;color:var(--text);cursor:pointer">
+        <input type="checkbox" id="cmRecorrente" style="width:16px;height:16px"> <span id="lb_recor"></span></label></div>
+      <div class="fld"><label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:12.5px;color:var(--text);cursor:pointer">
+        <input type="checkbox" id="cmMostrarCal" style="width:16px;height:16px"> <span id="lb_mostrarcal"></span></label></div>
     </div>
     <div class="modal-foot">
       <button class="del-btn" id="cmDel"></button>
@@ -338,6 +352,26 @@
   </div>
 </div>
 
+<!-- MODULE MODAL -->
+<div class="modal-bg" id="modModalBg">
+  <div class="modal">
+    <div class="modal-head"><span id="modModalTitle"></span><button class="x" id="modModalX">&times;</button></div>
+    <div class="modal-body">
+      <div class="fld"><label id="lb_mcode"></label><input id="mmCode"></div>
+      <div class="fld"><label id="lb_mpt"></label><input id="mmPt"></div>
+      <div class="fld-row">
+        <div class="fld"><label id="lb_men"></label><input id="mmEn"></div>
+        <div class="fld"><label id="lb_mes"></label><input id="mmEs"></div>
+      </div>
+      <div class="fld"><label id="lb_mcor"></label><div class="swatches" id="mmSwatches"></div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="del-btn" id="mmDel"></button>
+      <div style="display:flex;gap:8px"><button class="btn ghost" id="mmCancel"></button><button class="btn" id="mmSave"></button></div>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <div id="confetti"></div>
 
@@ -354,7 +388,7 @@ const LS_MAIN='sonova_askhr_lt_v1', LS_BKP='sonova_askhr_lt_v1_bkp';
 const MOD_COLOR={'HR-010':'#0083CA','HR-020':'#003C64','HR-030':'#005A64','HR-060':'#7D0041',
   'HR-080':'#8C321E','HR-090':'#0083CA','HR-110':'#003C64','HR-140':'#005A64','HR-150':'#7D0041','HR-170':'#8C321E','HR-190':'#0083CA'};
 
-const MODULES=[
+const DEFAULT_MODULES=[
   {id:'HR-010',en:'Position & Organization Management',pt:'Gestão de Posições e Organização',es:'Gestión de Posiciones y Organización'},
   {id:'HR-020',en:'Hiring & Offer',pt:'Contratação e Oferta',es:'Contratación y Oferta'},
   {id:'HR-030',en:'Onboarding',pt:'Integração (Onboarding)',es:'Incorporación (Onboarding)'},
@@ -459,7 +493,7 @@ const I18N={
     empty_cases:'Nenhum caso ainda. Crie um em "+ Caso" ou pelo botão "+ Caso" em cada processo.',
     add_case_here:'+ Caso neste dia',day_of:'Casos do dia',selected_day:'Dia selecionado',
     cm_new:'Novo caso',cm_edit:'Editar caso',lb_proc:'Processo (do catálogo)',lb_tit:'Título / descrição do caso',
-    lb_date:'Data (início)',lb_datefim:'Prazo (fim) — opcional',lb_cstat:'Status do caso',lb_resp:'Responsável',lb_obs:'Observações',lb_cor:'Cor (paleta Sonova)',
+    lb_date:'Data (início)',lb_datefim:'Prazo (fim) — opcional',lb_cstat:'Status do caso',lb_resp:'Responsável',lb_obs:'Observações',lb_cor:'Cor (paleta Sonova)',lb_recor:'Recorrente mensal (aparece todo mês neste dia)',recor_leg:'Recorrente mensal',lb_mostrarcal:'Mostrar no calendário',hide_cal:'Ocultar do calendário',restore_cal:'Mostrar no calendário',hidden_toast:'Ocultado do calendário',shown_toast:'Exibido no calendário',show_hidden:'Mostrar ocultos',hide_hidden:'Ocultar ocultos',
     cm_save:'Salvar',cm_cancel:'Cancelar',cm_del:'Excluir caso',cm_free:'(livre / sem processo)',
     bulk_title:'Transferir casos em lote',lb_bulk_dest:'Mover para o dia',lb_bulk_filter:'Filtrar por status',bulk_selvis:'Selecionar visíveis',bulk_clear:'Limpar seleção',bulk_move:'Transferir',bulk_cancel:'Cancelar',bulk_none:'Nenhum caso selecionado.',
     kb_pend:'Pendente',kb_and:'Em andamento',kb_done:'Concluído',
@@ -468,7 +502,7 @@ const I18N={
     reset_done:'Padrão restaurado',imported:'Dados importados',bad_file:'Arquivo inválido',
     reset_confirm:'Restaurar catálogo (44 processos) e apagar TODOS os casos? Todas as edições serão perdidas.',
     del_confirm:'Excluir este item?',quota:'Armazenamento cheio - exporte um backup.',xlsx_fail:'Excel indisponível - exportado como CSV.',
-    moved:'caso(s) movido(s)',all_done:'Parabéns! Todos os casos concluídos.',new_code:'HR-000-000',new_name:'Novo processo',new_case:'Novo caso'
+    moved:'caso(s) movido(s)',all_done:'Parabéns! Todos os casos concluídos.',new_code:'HR-000-000',new_name:'Novo processo',new_case:'Novo caso',btn_add_mod:'+ Módulo',mod_edit:'Editar módulo',add_proc_here:'+ Proc',empty_module:'Módulo sem processos. Use "+ Proc" nesta barra para adicionar.',new_module:'Novo módulo',added_mod:'Módulo criado',code_taken:'Código já existe.',lb_mcode:'Código do módulo',lb_mpt:'Nome (PT)',lb_men:'Nome (EN)',lb_mes:'Nome (ES)',lb_mcor:'Cor do módulo',mm_save:'Salvar',mm_cancel:'Cancelar',mod_del:'Excluir módulo',mod_del_empty:'Excluir este módulo?',mod_del_full:'Este módulo tem {N} processo(s). Eles serão movidos para "{M}". Continuar?',mod_del_last:'Não é possível excluir o único módulo.'
   },
   en:{title:'AskHR Cockpit + Timeline',subtitle:'Sonova Brazil · Knowledge Capture · Daily tracking',
     nav_proc:'Processes',nav_timeline:'Timeline',nav_cal:'Calendar',nav_kanban:'Flow',nav_gantt:'Gantt',
@@ -486,7 +520,7 @@ const I18N={
     empty_cases:'No cases yet. Create one via "+ Case" or the "+ Case" button on each process.',
     add_case_here:'+ Case on this day',day_of:'Cases of the day',selected_day:'Selected day',
     cm_new:'New case',cm_edit:'Edit case',lb_proc:'Process (from catalog)',lb_tit:'Case title / description',
-    lb_date:'Date (start)',lb_datefim:'Due (end) — optional',lb_cstat:'Case status',lb_resp:'Owner',lb_obs:'Notes',lb_cor:'Color (Sonova palette)',
+    lb_date:'Date (start)',lb_datefim:'Due (end) — optional',lb_cstat:'Case status',lb_resp:'Owner',lb_obs:'Notes',lb_cor:'Color (Sonova palette)',lb_recor:'Monthly recurring (shows every month on this day)',recor_leg:'Monthly recurring',lb_mostrarcal:'Show on calendar',hide_cal:'Hide from calendar',restore_cal:'Show on calendar',hidden_toast:'Hidden from calendar',shown_toast:'Shown on calendar',show_hidden:'Show hidden',hide_hidden:'Hide hidden',
     cm_save:'Save',cm_cancel:'Cancel',cm_del:'Delete case',cm_free:'(free / no process)',
     bulk_title:'Bulk transfer cases',lb_bulk_dest:'Move to day',lb_bulk_filter:'Filter by status',bulk_selvis:'Select visible',bulk_clear:'Clear',bulk_move:'Transfer',bulk_cancel:'Cancel',bulk_none:'No case selected.',
     kb_pend:'Pending',kb_and:'In progress',kb_done:'Done',
@@ -495,7 +529,7 @@ const I18N={
     reset_done:'Default restored',imported:'Data imported',bad_file:'Invalid file',
     reset_confirm:'Reset catalog (44 processes) and delete ALL cases? All edits will be lost.',
     del_confirm:'Delete this item?',quota:'Storage full - export a backup.',xlsx_fail:'Excel unavailable - exported as CSV.',
-    moved:'case(s) moved',all_done:'Congratulations! All cases completed.',new_code:'HR-000-000',new_name:'New process',new_case:'New case'
+    moved:'case(s) moved',all_done:'Congratulations! All cases completed.',new_code:'HR-000-000',new_name:'New process',new_case:'New case',btn_add_mod:'+ Module',mod_edit:'Edit module',add_proc_here:'+ Proc',empty_module:'Module has no processes. Use "+ Proc" on this bar to add.',new_module:'New module',added_mod:'Module created',code_taken:'Code already exists.',lb_mcode:'Module code',lb_mpt:'Name (PT)',lb_men:'Name (EN)',lb_mes:'Name (ES)',lb_mcor:'Module color',mm_save:'Save',mm_cancel:'Cancel',mod_del:'Delete module',mod_del_empty:'Delete this module?',mod_del_full:'This module has {N} process(es). They will be moved to "{M}". Continue?',mod_del_last:'Cannot delete the only module.'
   },
   es:{title:'Cockpit AskHR + Línea de Tiempo',subtitle:'Sonova Brasil · Knowledge Capture · Seguimiento diario',
     nav_proc:'Procesos',nav_timeline:'Línea de Tiempo',nav_cal:'Calendario',nav_kanban:'Flujo',nav_gantt:'Gantt',
@@ -513,7 +547,7 @@ const I18N={
     empty_cases:'Aún no hay casos. Cree uno con "+ Caso" o el botón "+ Caso" en cada proceso.',
     add_case_here:'+ Caso en este día',day_of:'Casos del día',selected_day:'Día seleccionado',
     cm_new:'Nuevo caso',cm_edit:'Editar caso',lb_proc:'Proceso (del catálogo)',lb_tit:'Título / descripción del caso',
-    lb_date:'Fecha (inicio)',lb_datefim:'Vencimiento (fin) — opcional',lb_cstat:'Estado del caso',lb_resp:'Responsable',lb_obs:'Observaciones',lb_cor:'Color (paleta Sonova)',
+    lb_date:'Fecha (inicio)',lb_datefim:'Vencimiento (fin) — opcional',lb_cstat:'Estado del caso',lb_resp:'Responsable',lb_obs:'Observaciones',lb_cor:'Color (paleta Sonova)',lb_recor:'Recurrente mensual (aparece cada mes en este día)',recor_leg:'Recurrente mensual',lb_mostrarcal:'Mostrar en el calendario',hide_cal:'Ocultar del calendario',restore_cal:'Mostrar en el calendario',hidden_toast:'Ocultado del calendario',shown_toast:'Mostrado en el calendario',show_hidden:'Mostrar ocultos',hide_hidden:'Ocultar ocultos',
     cm_save:'Guardar',cm_cancel:'Cancelar',cm_del:'Eliminar caso',cm_free:'(libre / sin proceso)',
     bulk_title:'Transferir casos en lote',lb_bulk_dest:'Mover al día',lb_bulk_filter:'Filtrar por estado',bulk_selvis:'Seleccionar visibles',bulk_clear:'Limpiar',bulk_move:'Transferir',bulk_cancel:'Cancelar',bulk_none:'Ningún caso seleccionado.',
     kb_pend:'Pendiente',kb_and:'En curso',kb_done:'Concluido',
@@ -522,7 +556,7 @@ const I18N={
     reset_done:'Predeterminado restaurado',imported:'Datos importados',bad_file:'Archivo inválido',
     reset_confirm:'¿Restaurar catálogo (44 procesos) y eliminar TODOS los casos? Se perderán todas las ediciones.',
     del_confirm:'¿Eliminar este elemento?',quota:'Almacenamiento lleno - exporte un backup.',xlsx_fail:'Excel no disponible - exportado como CSV.',
-    moved:'caso(s) movido(s)',all_done:'¡Felicidades! Todos los casos completados.',new_code:'HR-000-000',new_name:'Nuevo proceso',new_case:'Nuevo caso'
+    moved:'caso(s) movido(s)',all_done:'¡Felicidades! Todos los casos completados.',new_code:'HR-000-000',new_name:'Nuevo proceso',new_case:'Nuevo caso',btn_add_mod:'+ Módulo',mod_edit:'Editar módulo',add_proc_here:'+ Proc',empty_module:'Módulo sin procesos. Use "+ Proc" en esta barra para agregar.',new_module:'Nuevo módulo',added_mod:'Módulo creado',code_taken:'El código ya existe.',lb_mcode:'Código del módulo',lb_mpt:'Nombre (PT)',lb_men:'Nombre (EN)',lb_mes:'Nombre (ES)',lb_mcor:'Color del módulo',mm_save:'Guardar',mm_cancel:'Cancelar',mod_del:'Eliminar módulo',mod_del_empty:'¿Eliminar este módulo?',mod_del_full:'Este módulo tiene {N} proceso(s). Se moverán a "{M}". ¿Continuar?',mod_del_last:'No se puede eliminar el único módulo.'
   }
 };
 
@@ -534,6 +568,7 @@ const filters={search:'',mod:'',temos:'',status:'',cstatus:''};
 let curYear,curMonth,selDay;
 let editingCaseId=null,editingColor='';
 let allDoneFlag=false;
+let showHiddenCal=false;
 
 /* ===================== PERSISTENCIA ===================== */
 let STORAGE_OK=true, _warnedStorage=false;
@@ -562,11 +597,31 @@ function loadState(){
   if(!raw){try{raw=localStorage.getItem(LS_BKP);}catch(e){}}
   if(raw){try{const p=JSON.parse(raw);
     if(p&&Array.isArray(p.catalog)&&p.catalog.length){
-      state={catalog:p.catalog,cases:Array.isArray(p.cases)?p.cases:[],collapsed:p.collapsed||{}};
+      state={catalog:p.catalog,cases:Array.isArray(p.cases)?p.cases:[],collapsed:p.collapsed||{},
+        modules:(Array.isArray(p.modules)&&p.modules.length)?p.modules:seedModules()};
       state.cases.forEach(c=>{if(!c.id)c.id=uid();});
+      normalizeModules();normalizeCases();
       return;}
   }catch(e){}}
-  state={catalog:SEED.map(seedToItem),cases:[],collapsed:{}};
+  state={catalog:SEED.map(seedToItem),cases:[],collapsed:{},modules:seedModules()};
+}
+function seedModules(){return DEFAULT_MODULES.map(m=>({id:m.id,en:m.en,pt:m.pt,es:m.es,color:MOD_COLOR[m.id]||'#0083CA',custom:false}));}
+function normalizeModules(){
+  if(!Array.isArray(state.modules)||!state.modules.length)state.modules=seedModules();
+  state.modules.forEach(m=>{if(!m.color)m.color=MOD_COLOR[m.id]||'#0083CA';
+    if(m.en==null)m.en=m.pt||m.id;if(m.pt==null)m.pt=m.en||m.id;if(m.es==null)m.es=m.pt||m.id;});
+}
+function normalizeCases(){
+  const arr=Array.isArray(state.cases)?state.cases:[];
+  const seen={},out=[];
+  arr.forEach(c=>{
+    if(!c.id)c.id=uid();
+    if(seen[c.id])return; // remove duplicata exata por id
+    seen[c.id]=1;
+    if(c.recorrente===undefined)c.recorrente=/recorrente\s+mensal/i.test(c.obs||'');
+    out.push(c);
+  });
+  state.cases=out;
 }
 function seedToItem(s){return{code:s.code,mod:s.mod,en:s.en,pt:s.pt,es:s.es,temos:'nao',status:'nao_mapeado',
   owner:'',notes:'',custom:false,edited:false,oen:s.en,opt:s.pt,oes:s.es};}
@@ -579,7 +634,7 @@ function statusLabel(v){const o=STATUS_OPTS.find(x=>x.v===v);return o?o[LANG]:v;
 function temosLabel(v){const o=TEMOS_OPTS.find(x=>x.v===v);return o?o[LANG]:v;}
 function csObj(v){return CASE_STATUS.find(x=>x.v===v)||CASE_STATUS[0];}
 function csLabel(v){return csObj(v)[LANG];}
-function modObj(id){return MODULES.find(x=>x.id===id);}
+function modObj(id){return state.modules.find(x=>x.id===id);}
 function modName(id){const m=modObj(id);return m?m[LANG]:id;}
 function procByCode(code){return state.catalog.find(x=>x.code===code);}
 function palByV(v){return PALETTE.find(p=>p.v===v)||PALETTE[0];}
@@ -671,18 +726,28 @@ function passProc(it){
 }
 function renderProcessos(app){
   const order=langOrder();let any=false;
-  MODULES.forEach(m=>{
-    const items=state.catalog.filter(it=>it.mod===m.id&&passProc(it));if(!items.length)return;any=true;
-    const color=MOD_COLOR[m.id]||'#0083CA',collapsed=!!state.collapsed[m.id];
+  state.modules.forEach(m=>{
     const tot=state.catalog.filter(it=>it.mod===m.id).length;
+    const items=state.catalog.filter(it=>it.mod===m.id&&passProc(it));
+    if(!items.length&&tot>0)return; // filtro escondeu todos deste modulo
+    any=true;
+    const color=m.color||MOD_COLOR[m.id]||'#0083CA',collapsed=!!state.collapsed[m.id];
     const done=state.catalog.filter(it=>it.mod===m.id&&(it.status==='documentado'||it.status==='validado')).length;
     const pct=tot?Math.round(done/tot*100):0;
     const sec=document.createElement('section');sec.className='module'+(collapsed?' collapsed':'');
     const head=document.createElement('div');head.className='module-head';head.style.background=color;
-    head.innerHTML='<span class="mcode">'+m.id+'</span><h2>'+esc(m[LANG])+'</h2><span class="mcount">'+items.length+' / '+tot+' &middot; '+pct+'%</span><span class="chev">&#9660;</span>';
-    head.addEventListener('click',()=>{state.collapsed[m.id]=!collapsed;persist();render();});
+    head.innerHTML='<span class="mcode">'+esc(m.id)+'</span><h2>'+esc(m[LANG])+'</h2><span class="mcount">'+items.length+' / '+tot+' &middot; '+pct+'%</span>'+
+      '<button class="mh-btn" data-act="addproc" title="'+t('add_proc_here')+'">'+t('add_proc_here')+'</button>'+
+      '<button class="mh-btn" data-act="editmod" title="'+t('mod_edit')+'">&#9998;</button>'+
+      '<span class="chev">&#9660;</span>';
+    head.addEventListener('click',e=>{
+      const b=e.target.closest('[data-act]');
+      if(b){e.stopPropagation();if(b.dataset.act==='addproc')addProcess(m.id);else openModuleModal(m.id);return;}
+      state.collapsed[m.id]=!collapsed;persist();render();
+    });
     const mini=document.createElement('div');mini.className='module-mini';mini.innerHTML='<span style="width:'+pct+'%"></span>';
     const body=document.createElement('div');body.className='module-body';
+    if(!items.length){const e=document.createElement('div');e.className='empty';e.style.gridColumn='1/-1';e.style.padding='18px';e.textContent=t('empty_module');body.appendChild(e);}
     items.forEach(it=>body.appendChild(buildProcCard(it,color,order)));
     sec.appendChild(head);sec.appendChild(mini);sec.appendChild(body);app.appendChild(sec);
   });
@@ -796,11 +861,20 @@ function buildCaseRow(c){
 }
 
 /* ===================== CALENDARIO ===================== */
+function recurDayInMonth(c,y,m){const base=parseYMD(c.date);if(!base)return null;const dim=new Date(y,m+1,0).getDate();return Math.min(base.getDate(),dim);}
 function renderCalendario(app){
   app.appendChild(monthNav());
   const leg=document.createElement('div');leg.className='cal-legend';
   CASE_STATUS.forEach(s=>leg.innerHTML+='<span class="leg-item"><span class="leg-dot" style="background:'+s.color+'"></span>'+esc(s[LANG])+'</span>');
   PALETTE.filter(p=>p.hex).forEach(p=>leg.innerHTML+='<span class="leg-item"><span class="leg-dot" style="background:'+p.hex+'"></span>'+esc(p.name[LANG])+'</span>');
+  leg.innerHTML+='<span class="leg-item"><span class="mbadge" style="position:static">M</span> '+esc(t('recor_leg'))+'</span>';
+  const hiddenN=state.cases.filter(c=>c.noCal).length;
+  if(hiddenN||showHiddenCal){
+    const tb=document.createElement('button');tb.className='mini-btn';tb.style.marginLeft='auto';
+    tb.textContent=showHiddenCal?t('hide_hidden'):(t('show_hidden')+' ('+hiddenN+')');
+    tb.addEventListener('click',()=>{showHiddenCal=!showHiddenCal;render();});
+    leg.appendChild(tb);
+  }
   app.appendChild(leg);
   const grid=document.createElement('div');grid.className='cal-grid';
   t('dow').forEach(d=>{const h=document.createElement('div');h.className='cal-dow';h.textContent=d;grid.appendChild(h);});
@@ -811,7 +885,10 @@ function renderCalendario(app){
     const cell=document.createElement('div');
     cell.className='cal-cell'+(wd===6?' sat':'')+(wd===0?' sun':'')+(dateStr===todayYMD()?' today':'');
     cell.innerHTML='<span class="cal-daynum">'+d+'</span>';
-    state.cases.filter(c=>c.date===dateStr&&passCase(c)).forEach(c=>cell.appendChild(buildChip(c)));
+    // casos de data unica neste dia (respeitando ocultacao no calendario)
+    state.cases.filter(c=>!c.recorrente&&c.date===dateStr&&passCase(c)&&(showHiddenCal||!c.noCal)).forEach(c=>cell.appendChild(buildChip(c)));
+    // casos recorrentes mensais: aparecem todo mes no mesmo dia-do-mes
+    state.cases.filter(c=>c.recorrente&&passCase(c)&&recurDayInMonth(c,curYear,curMonth)===d&&(showHiddenCal||!c.noCal)).forEach(c=>cell.appendChild(buildChip(c)));
     const add=document.createElement('div');add.className='cal-add';add.textContent='+';
     add.addEventListener('click',()=>openCaseModal(null,{date:dateStr}));cell.appendChild(add);
     cell.addEventListener('dragover',e=>{e.preventDefault();cell.classList.add('dragover');});
@@ -823,14 +900,18 @@ function renderCalendario(app){
 }
 function buildChip(c){
   const hex=caseColor(c);const chip=document.createElement('div');
-  chip.className='chip'+(isLightColor(hex)?' light':'');chip.style.background=hex;chip.draggable=true;
-  chip.innerHTML='<span class="chdot" style="background:'+hex+'"></span><span class="chtxt">'+esc((c.proc?c.proc+' · ':'')+caseLabel(c))+'</span>';
+  chip.className='chip'+(isLightColor(hex)?' light':'')+(c.noCal?' hiddencal':'');chip.style.background=hex;chip.draggable=true;
+  chip.innerHTML='<span class="chdot" style="background:'+hex+'"></span><span class="chtxt">'+esc((c.proc?c.proc+' · ':'')+caseLabel(c))+'</span>'+
+    (c.recorrente?'<span class="mbadge" title="'+esc(t('recor_leg'))+'">M</span>':'')+
+    '<span class="chx" title="'+esc(c.noCal?t('restore_cal'):t('hide_cal'))+'">'+(c.noCal?'&#8635;':'&times;')+'</span>';
   chip.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/id',c.id);chip.classList.add('dragging');});
   chip.addEventListener('dragend',()=>chip.classList.remove('dragging'));
   chip.addEventListener('dblclick',()=>openCaseModal(c.id));
   chip.querySelector('.chdot').addEventListener('click',ev=>{ev.stopPropagation();cycleColor(c);});
+  chip.querySelector('.chx').addEventListener('click',ev=>{ev.stopPropagation();toggleCalVisibility(c);});
   return chip;
 }
+function toggleCalVisibility(c){c.noCal=!c.noCal;persist();render();toast(c.noCal?t('hidden_toast'):t('shown_toast'));}
 function cycleColor(c){const idx=PALETTE.findIndex(p=>p.v===(c.cor||''));c.cor=PALETTE[(idx+1)%PALETTE.length].v;persist();render();}
 
 /* ===================== KANBAN ===================== */
@@ -902,12 +983,12 @@ function monthNav(){
 function openCaseModal(id,preset){
   editingCaseId=id;
   const isNew=!id;let c;
-  if(isNew){c={id:uid(),proc:(preset&&preset.proc)||'',titulo:'',date:(preset&&preset.date)||todayYMD(),dateFim:'',status:'pendente',resp:'',obs:'',cor:''};}
+  if(isNew){c={id:uid(),proc:(preset&&preset.proc)||'',titulo:'',date:(preset&&preset.date)||todayYMD(),dateFim:'',status:'pendente',resp:'',obs:'',cor:'',recorrente:false,noCal:false};}
   else{c=state.cases.find(x=>x.id===id);if(!c)return;}
   document.getElementById('caseModalTitle').textContent=isNew?t('cm_new'):t('cm_edit');
   const sel=document.getElementById('cmProc');
   sel.innerHTML='<option value="">'+t('cm_free')+'</option>'+
-    MODULES.map(m=>'<optgroup label="'+m.id+' · '+esc(m[LANG])+'">'+
+    state.modules.map(m=>'<optgroup label="'+m.id+' · '+esc(m[LANG])+'">'+
       state.catalog.filter(p=>p.mod===m.id).map(p=>'<option value="'+p.code+'"'+(p.code===c.proc?' selected':'')+'>'+p.code+' · '+esc(p[LANG])+'</option>').join('')+'</optgroup>').join('');
   document.getElementById('cmTit').value=c.titulo||'';
   document.getElementById('cmDate').value=c.date||'';
@@ -916,6 +997,8 @@ function openCaseModal(id,preset){
   document.getElementById('cmResp').value=c.resp||'';
   document.getElementById('cmObs').value=c.obs||'';
   editingColor=c.cor||'';buildSwatches();
+  document.getElementById('cmRecorrente').checked=!!c.recorrente;
+  document.getElementById('cmMostrarCal').checked=!c.noCal;
   document.getElementById('cmDel').style.display=isNew?'none':'inline';
   document.getElementById('caseModalBg').classList.add('show');
   document.getElementById('caseModalBg')._draft=c;document.getElementById('caseModalBg')._isNew=isNew;
@@ -940,10 +1023,12 @@ function saveCaseModal(){
   c.resp=document.getElementById('cmResp').value.trim();
   c.obs=document.getElementById('cmObs').value.trim();
   c.cor=editingColor;
+  c.recorrente=document.getElementById('cmRecorrente').checked;
+  c.noCal=!document.getElementById('cmMostrarCal').checked;
   if(!c.titulo&&!c.proc)c.titulo=t('new_case');
   if(isNew)state.cases.unshift(c);
   persist();closeCaseModal();
-  if(VIEW==='processos')VIEW='timeline';
+  if(VIEW==='processos')VIEW=c.recorrente?'calendario':'timeline';
   if(c.date){const d=parseYMD(c.date);curYear=d.getFullYear();curMonth=d.getMonth();selDay=c.date;}
   render();toast(isNew?t('added_case'):t('saved'));
 }
@@ -1022,7 +1107,7 @@ function fireConfetti(){
 function exportExcel(){
   const fname='Cockpit_AskHR_Linhatempo_Sonova_'+stamp()+'.xlsx';
   const procRows=[['Código','Módulo','English','Português','Español','Temos','Status','Responsável/SME','Observações']];
-  MODULES.forEach(m=>state.catalog.filter(i=>i.mod===m.id).forEach(it=>procRows.push([it.code,m.id+' - '+m.pt,it.en,it.pt,it.es,temosPt(it.temos),statusPt(it.status),it.owner,it.notes])));
+  state.modules.forEach(m=>state.catalog.filter(i=>i.mod===m.id).forEach(it=>procRows.push([it.code,m.id+' - '+m.pt,it.en,it.pt,it.es,temosPt(it.temos),statusPt(it.status),it.owner,it.notes])));
   const caseRows=[['Processo','Título','Data início','Prazo fim','Status','Responsável','Cor','Observações']];
   state.cases.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(c=>{
     const proc=procByCode(c.proc);caseRows.push([c.proc||'(livre)',(c.titulo||(proc?proc.pt:'')),c.date||'',c.dateFim||'',csPt(c.status),c.resp||'',palPt(c.cor),c.obs||'']);});
@@ -1056,11 +1141,12 @@ function stamp(){const d=new Date();return d.getFullYear()+pad(d.getMonth()+1)+p
 
 /* ===================== ADD / IMPORT / RESET ===================== */
 function pad3(n){return String(n).padStart(3,'0');}
-function addProcess(){
+function addProcess(targetMod){
   // Ir para a aba Processos e limpar filtros/busca que esconderiam o novo item
   VIEW='processos';
-  const modId=(filters.mod&&MODULES.some(m=>m.id===filters.mod))?filters.mod:'HR-190';
-  filters.search='';filters.temos='';filters.status='';
+  let modId=targetMod||(filters.mod&&state.modules.some(m=>m.id===filters.mod)?filters.mod:null);
+  if(!modId||!state.modules.some(m=>m.id===modId))modId=state.modules.some(m=>m.id==='HR-190')?'HR-190':(state.modules[0]&&state.modules[0].id);
+  filters.search='';filters.temos='';filters.status='';filters.mod='';
   const s=document.getElementById('search');if(s)s.value='';
   // Codigo unico para nao colidir em cliques repetidos
   const existing=new Set(state.catalog.map(x=>x.code));
@@ -1073,6 +1159,65 @@ function addProcess(){
   const card=document.querySelector('.card[data-code="'+CSS.escape(code)+'"]');
   if(card){card.classList.add('open');card.scrollIntoView({behavior:'smooth',block:'center'});}
 }
+
+/* ===================== MODULOS: CRUD ===================== */
+let editingModColor='#0083CA';
+function nextModuleId(){const ex=new Set(state.modules.map(m=>m.id));let n=200,id='HR-'+n;while(ex.has(id)){n+=10;id='HR-'+n;}return id;}
+function addModule(){
+  const m={id:nextModuleId(),en:t('new_module'),pt:t('new_module'),es:t('new_module'),color:'#0083CA',custom:true};
+  state.modules.push(m);state.collapsed[m.id]=false;persist();
+  VIEW='processos';filters.search='';filters.mod='';filters.temos='';filters.status='';
+  const s=document.getElementById('search');if(s)s.value='';
+  render();openModuleModal(m.id);toast(t('added_mod'));
+}
+function openModuleModal(id){
+  const m=state.modules.find(x=>x.id===id);if(!m)return;
+  const bg=document.getElementById('modModalBg');bg._draft=m;bg._origId=m.id;
+  document.getElementById('modModalTitle').textContent=t('mod_edit');
+  document.getElementById('mmCode').value=m.id;
+  document.getElementById('mmPt').value=m.pt||'';
+  document.getElementById('mmEn').value=m.en||'';
+  document.getElementById('mmEs').value=m.es||'';
+  editingModColor=m.color||'#0083CA';buildModSwatches();
+  document.getElementById('mmDel').style.display=(state.modules.length>1)?'inline':'none';
+  bg.classList.add('show');
+}
+function buildModSwatches(){
+  const wrap=document.getElementById('mmSwatches');wrap.innerHTML='';
+  PALETTE.filter(p=>p.hex).forEach(p=>{
+    const sw=document.createElement('div');sw.className='sw'+(editingModColor===p.hex?' sel':'');
+    sw.style.background=p.hex;sw.title=p.name[LANG];
+    sw.addEventListener('click',()=>{editingModColor=p.hex;buildModSwatches();});
+    wrap.appendChild(sw);
+  });
+}
+function saveModuleModal(){
+  const bg=document.getElementById('modModalBg');const m=bg._draft,orig=bg._origId;
+  let newId=(document.getElementById('mmCode').value||'').trim()||orig;
+  if(newId!==orig&&state.modules.some(x=>x.id===newId)){toast(t('code_taken'));return;}
+  const oldId=m.id;
+  m.id=newId;m.pt=document.getElementById('mmPt').value.trim()||newId;
+  m.en=document.getElementById('mmEn').value.trim()||m.pt;m.es=document.getElementById('mmEs').value.trim()||m.pt;
+  m.color=editingModColor;
+  if(newId!==oldId){
+    state.catalog.forEach(it=>{if(it.mod===oldId)it.mod=newId;});
+    if(state.collapsed[oldId]!=null){state.collapsed[newId]=state.collapsed[oldId];delete state.collapsed[oldId];}
+  }
+  persist();closeModuleModal();render();toast(t('saved'));
+}
+function deleteModule(){
+  const bg=document.getElementById('modModalBg');const m=bg._draft;
+  if(state.modules.length<=1){toast(t('mod_del_last'));return;}
+  const procs=state.catalog.filter(it=>it.mod===m.id);
+  const target=state.modules.find(x=>x.id!==m.id);
+  let msg=procs.length?t('mod_del_full').replace('{N}',procs.length).replace('{M}',target[LANG]):t('mod_del_empty');
+  if(confirm(msg)){
+    procs.forEach(it=>it.mod=target.id);
+    state.modules=state.modules.filter(x=>x.id!==m.id);delete state.collapsed[m.id];
+    persist();closeModuleModal();render();toast(t('deleted'));
+  }
+}
+function closeModuleModal(){document.getElementById('modModalBg').classList.remove('show');}
 /* --- Conversao do backup linhatempo (Gerenciador RH - PMO Sonova) --- */
 const LT_COR={azul:'blue',escuro:'navy',petroleo:'teal',claro:'light',bordo:'wine','bordô':'wine',terracota:'rust',
   blue:'blue',navy:'navy',teal:'teal',light:'light',wine:'wine',rust:'rust'};
@@ -1090,7 +1235,7 @@ function convertLinhatempo(p){
     if(!isYMD(date)){const dnum=parseInt(dayKey,10);if(dnum)date=ymd(curYear,curMonth,dnum);else return;}
     const fim=(a.fim&&a.fim!==a.inicio&&isYMD(a.fim))?a.fim:'';
     out.push({id:a.id||uid(),proc:'',titulo:ltCollapse(a.text)||t('new_case'),date:date,dateFim:fim,
-      status:ltStatus(a.status),resp:String(a.responsavel||'').trim(),obs:ltObs(a,''),cor:LT_COR[String(a.cor||'').toLowerCase()]||''});
+      status:ltStatus(a.status),resp:String(a.responsavel||'').trim(),obs:ltObs(a,''),cor:LT_COR[String(a.cor||'').toLowerCase()]||'',recorrente:false,noCal:a.noCalendario===true});
   });});
   (Array.isArray(p.calendarioDireto)?p.calendarioDireto:[]).forEach(a=>{
     let date='';
@@ -1098,7 +1243,7 @@ function convertLinhatempo(p){
     else if(isYMD(a.date))date=a.date;
     if(!isYMD(date))return;
     out.push({id:a.id||uid(),proc:'',titulo:ltCollapse(a.text)||t('new_case'),date:date,dateFim:'',
-      status:ltStatus(a.status),resp:String(a.responsavel||'').trim(),obs:ltObs(a,a.recorrenteMensal?'Recorrente mensal':''),cor:LT_COR[String(a.cor||'').toLowerCase()]||''});
+      status:ltStatus(a.status),resp:String(a.responsavel||'').trim(),obs:ltObs(a,a.recorrenteMensal?'Recorrente mensal':''),cor:LT_COR[String(a.cor||'').toLowerCase()]||'',recorrente:!!a.recorrenteMensal});
   });
   return out;
 }
@@ -1115,8 +1260,9 @@ function importJSON(file){
     try{p=JSON.parse(rd.result);}catch(e){toast(t('bad_file')+' (JSON)');return;}
     try{
       if(p&&Array.isArray(p.catalog)){
-        state={catalog:p.catalog,cases:Array.isArray(p.cases)?p.cases:[],collapsed:p.collapsed||{}};
-        state.cases.forEach(c=>{if(!c.id)c.id=uid();});
+        state={catalog:p.catalog,cases:Array.isArray(p.cases)?p.cases:[],collapsed:p.collapsed||{},
+          modules:(Array.isArray(p.modules)&&p.modules.length)?p.modules:seedModules()};
+        state.cases.forEach(c=>{if(!c.id)c.id=uid();});normalizeModules();normalizeCases();
         allDoneFlag=(state.cases.length>0&&state.cases.every(c=>c.status==='concluido'));
         persist();render();toast(t('imported'));
       }else if(p&&(p.activityData||p.calendarioDireto)){
@@ -1132,7 +1278,7 @@ function importJSON(file){
   };
   rd.readAsText(file);
 }
-function resetDefault(){if(confirm(t('reset_confirm'))){state={catalog:SEED.map(seedToItem),cases:[],collapsed:{}};allDoneFlag=false;persist();render();toast(t('reset_done'));}}
+function resetDefault(){if(confirm(t('reset_confirm'))){state={catalog:SEED.map(seedToItem),cases:[],collapsed:{},modules:seedModules()};allDoneFlag=false;persist();render();toast(t('reset_done'));}}
 
 /* ===================== CHROME / i18n ===================== */
 function applyChrome(){
@@ -1144,16 +1290,19 @@ function applyChrome(){
   document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b.dataset.view===VIEW));
   document.getElementById('footStamp').textContent=new Date().toLocaleString(LANG==='pt'?'pt-BR':LANG==='es'?'es-ES':'en-US');
   // modal labels
-  const M=[['lb_proc','lb_proc'],['lb_tit','lb_tit'],['lb_date','lb_date'],['lb_datefim','lb_datefim'],['lb_cstat','lb_cstat'],['lb_resp','lb_resp'],['lb_obs','lb_obs'],['lb_cor','lb_cor']];
+  const M=[['lb_proc','lb_proc'],['lb_tit','lb_tit'],['lb_date','lb_date'],['lb_datefim','lb_datefim'],['lb_cstat','lb_cstat'],['lb_resp','lb_resp'],['lb_obs','lb_obs'],['lb_cor','lb_cor'],['lb_recor','lb_recor'],['lb_mostrarcal','lb_mostrarcal']];
   M.forEach(([id,k])=>{const e=document.getElementById(id);if(e)e.textContent=t(k);});
   document.getElementById('cmSave').textContent=t('cm_save');document.getElementById('cmCancel').textContent=t('cm_cancel');document.getElementById('cmDel').textContent=t('cm_del');
   document.getElementById('bulkTitle').textContent=t('bulk_title');document.getElementById('lb_bulk_dest').textContent=t('lb_bulk_dest');
   document.getElementById('lb_bulk_filter').textContent=t('lb_bulk_filter');document.getElementById('bulkSelVis').textContent=t('bulk_selvis');
   document.getElementById('bulkClear').textContent=t('bulk_clear');document.getElementById('bulkMove').textContent=t('bulk_move');document.getElementById('bulkCancel').textContent=t('bulk_cancel');
+  const ML=[['lb_mcode','lb_mcode'],['lb_mpt','lb_mpt'],['lb_men','lb_men'],['lb_mes','lb_mes'],['lb_mcor','lb_mcor']];
+  ML.forEach(([id,k])=>{const e=document.getElementById(id);if(e)e.textContent=t(k);});
+  document.getElementById('mmSave').textContent=t('mm_save');document.getElementById('mmCancel').textContent=t('mm_cancel');document.getElementById('mmDel').textContent=t('mod_del');
 }
 function buildFilterSelects(){
   const fm=document.getElementById('fModule');
-  fm.innerHTML='<option value="">'+t('f_all_mod')+'</option>'+MODULES.map(m=>'<option value="'+m.id+'"'+(filters.mod===m.id?' selected':'')+'>'+m.id+' · '+esc(m[LANG])+'</option>').join('');
+  fm.innerHTML='<option value="">'+t('f_all_mod')+'</option>'+state.modules.map(m=>'<option value="'+m.id+'"'+(filters.mod===m.id?' selected':'')+'>'+m.id+' · '+esc(m[LANG])+'</option>').join('');
   const ft=document.getElementById('fTemos');
   ft.innerHTML='<option value="">'+t('f_all_temos')+'</option>'+TEMOS_OPTS.map(o=>'<option value="'+o.v+'"'+(filters.temos===o.v?' selected':'')+'>'+esc(o[LANG])+'</option>').join('');
   const fs=document.getElementById('fStatus');
@@ -1172,11 +1321,17 @@ function bind(){
   document.getElementById('fTemos').addEventListener('change',e=>{filters.temos=e.target.value;render();});
   document.getElementById('fStatus').addEventListener('change',e=>{filters.status=e.target.value;render();});
   document.getElementById('fCaseStatus').addEventListener('change',e=>{filters.cstatus=e.target.value;render();});
-  document.getElementById('addProcBtn').addEventListener('click',addProcess);
+  document.getElementById('addProcBtn').addEventListener('click',()=>addProcess());
+  document.getElementById('addModBtn').addEventListener('click',addModule);
+  document.getElementById('mmSave').addEventListener('click',saveModuleModal);
+  document.getElementById('mmCancel').addEventListener('click',closeModuleModal);
+  document.getElementById('modModalX').addEventListener('click',closeModuleModal);
+  document.getElementById('mmDel').addEventListener('click',deleteModule);
+  document.getElementById('modModalBg').addEventListener('click',e=>{if(e.target.id==='modModalBg')closeModuleModal();});
   document.getElementById('addCaseBtn').addEventListener('click',()=>openCaseModal(null,{}));
   document.getElementById('bulkBtn').addEventListener('click',openBulk);
-  document.getElementById('expandAll').addEventListener('click',()=>{MODULES.forEach(m=>state.collapsed[m.id]=false);persist();render();});
-  document.getElementById('collapseAll').addEventListener('click',()=>{MODULES.forEach(m=>state.collapsed[m.id]=true);persist();render();});
+  document.getElementById('expandAll').addEventListener('click',()=>{state.modules.forEach(m=>state.collapsed[m.id]=false);persist();render();});
+  document.getElementById('collapseAll').addEventListener('click',()=>{state.modules.forEach(m=>state.collapsed[m.id]=true);persist();render();});
   document.getElementById('xlsxBtn').addEventListener('click',exportExcel);
   document.getElementById('jsonBtn').addEventListener('click',exportJSON);
   document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('fileInput').click());
@@ -1197,7 +1352,7 @@ function bind(){
   document.getElementById('bulkCancel').addEventListener('click',()=>document.getElementById('bulkModalBg').classList.remove('show'));
   document.getElementById('bulkX').addEventListener('click',()=>document.getElementById('bulkModalBg').classList.remove('show'));
   document.getElementById('bulkModalBg').addEventListener('click',e=>{if(e.target.id==='bulkModalBg')e.currentTarget.classList.remove('show');});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCaseModal();document.getElementById('bulkModalBg').classList.remove('show');}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCaseModal();closeModuleModal();document.getElementById('bulkModalBg').classList.remove('show');}});
 }
 
 /* ===================== INIT ===================== */
