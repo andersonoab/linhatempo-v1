@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cockpit AskHR + Linha do Tempo | Sonova Brasil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rufina:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<style>
+  :root{
+    --blue:#0083CA;--navy:#003C64;--teal:#005A64;--lightblue:#6EB4DC;
+    --wine:#7D0041;--rust:#8C321E;--text:#333333;--text2:#646464;
+    --border:#CCCCCC;--bg:#FFFFFF;--bg-soft:#F5F7F9;
+    --done:#2E7D32;--done-dk:#1B5E20;--warn:#B8860B;--late:#8C321E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Roboto',Arial,sans-serif;font-weight:300;color:var(--text);
+    background:var(--bg-soft);-webkit-font-smoothing:antialiased;line-height:1.45}
+  h1,h2,h3,.rufina{font-family:'Rufina',Georgia,serif}
+
+  /* HEADER */
+  header.topbar{background:var(--blue);color:#fff;padding:12px 26px;display:flex;
+    align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
+    box-shadow:0 2px 6px rgba(0,0,0,.12);position:sticky;top:0;z-index:60}
+  .brand{display:flex;align-items:center;gap:14px}
+  .brand .logo{width:40px;height:40px;border:2px solid #fff;border-radius:50%;display:flex;
+    align-items:center;justify-content:center;font-family:'Rufina',serif;font-weight:700;font-size:18px;flex:none}
+  .brand h1{font-size:19px;font-weight:700;letter-spacing:.3px;line-height:1.1}
+  .brand .sub{font-size:11px;font-weight:300;opacity:.92;letter-spacing:.4px;text-transform:uppercase}
+  .lang-switch{display:flex;border:1px solid rgba(255,255,255,.55);border-radius:5px;overflow:hidden}
+  .lang-switch button{background:transparent;color:#fff;border:none;padding:6px 12px;
+    font-family:'Roboto';font-size:12px;font-weight:400;cursor:pointer;letter-spacing:.5px}
+  .lang-switch button.active{background:#fff;color:var(--blue);font-weight:500}
+
+  /* NAV TABS */
+  nav.tabs{background:var(--navy);display:flex;gap:0;padding:0 26px;position:sticky;top:64px;z-index:55;flex-wrap:wrap}
+  nav.tabs button{background:transparent;border:none;color:rgba(255,255,255,.78);
+    font-family:'Roboto';font-size:13.5px;font-weight:400;padding:12px 18px;cursor:pointer;
+    border-bottom:3px solid transparent;letter-spacing:.3px;transition:.15s}
+  nav.tabs button:hover{color:#fff;background:rgba(255,255,255,.06)}
+  nav.tabs button.active{color:#fff;border-bottom-color:var(--lightblue);font-weight:500}
+
+  /* KPI STRIP */
+  .kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:16px 26px 4px;
+    max-width:1600px;margin:0 auto;width:100%}
+  .kpi{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 15px;
+    cursor:pointer;transition:.15s;border-left:4px solid var(--blue)}
+  .kpi:hover{box-shadow:0 3px 10px rgba(0,0,0,.08);transform:translateY(-1px)}
+  .kpi.sel{box-shadow:0 0 0 2px var(--blue) inset}
+  .kpi .num{font-family:'Rufina',serif;font-size:25px;font-weight:700;color:var(--navy);line-height:1}
+  .kpi .lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+  .kpi.k-done{border-left-color:var(--done)}.kpi.k-prog{border-left-color:var(--blue)}
+  .kpi.k-pend{border-left-color:var(--text2)}.kpi.k-late{border-left-color:var(--late)}
+  .kpi.k-parcial{border-left-color:var(--warn)}.kpi.k-nao{border-left-color:var(--late)}
+  .kpi.k-doc{border-left-color:var(--teal)}.kpi.k-sim{border-left-color:var(--done)}
+
+  .overall{max-width:1600px;margin:6px auto 0;padding:4px 26px 0;width:100%}
+  .prog-wrap{background:#E4E9ED;border-radius:20px;height:11px;overflow:hidden}
+  .prog-bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--done));width:0;transition:width .5s}
+  .prog-cap{font-size:11px;color:var(--text2);margin-top:4px;display:flex;justify-content:space-between}
+
+  /* TOOLBAR */
+  .toolbar{max-width:1600px;margin:14px auto 0;padding:0 26px;width:100%;
+    display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+  .toolbar input[type=text],.toolbar select{font-family:'Roboto';font-size:13px;font-weight:300;
+    color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px 11px;background:#fff}
+  .toolbar input[type=text]{min-width:210px;flex:1}
+  .btn{font-family:'Roboto';font-size:12.5px;font-weight:400;cursor:pointer;border:1px solid var(--blue);
+    background:var(--blue);color:#fff;padding:8px 14px;border-radius:6px;transition:.15s;letter-spacing:.3px;white-space:nowrap}
+  .btn:hover{background:var(--navy);border-color:var(--navy)}
+  .btn.ghost{background:#fff;color:var(--blue)}.btn.ghost:hover{background:var(--bg-soft);color:var(--navy)}
+  .btn.wine{background:var(--wine);border-color:var(--wine)}.btn.wine:hover{background:#5c0030;border-color:#5c0030}
+  .hidden{display:none!important}
+
+  main{max-width:1600px;margin:0 auto;padding:18px 26px 60px;width:100%}
+
+  /* ===== PROCESSOS (catalogo) ===== */
+  .module{margin-top:22px}
+  .module-head{display:flex;align-items:center;gap:12px;padding:9px 14px;border-radius:8px 8px 0 0;color:#fff;cursor:pointer;user-select:none}
+  .module-head .mcode{font-weight:500;font-size:12px;background:rgba(255,255,255,.22);padding:3px 8px;border-radius:4px}
+  .module-head h2{font-size:16px;font-weight:700;flex:1;line-height:1.15}
+  .module-head .mcount{font-size:12px;font-weight:400;opacity:.92}
+  .module-head .chev{transition:.2s}.module.collapsed .chev{transform:rotate(-90deg)}
+  .module-mini{height:5px;background:#E4E9ED}.module-mini>span{display:block;height:100%;background:rgba(255,255,255,.9);width:0;transition:width .4s}
+  .module-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:13px;
+    padding:15px;background:#fff;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px}
+  .module.collapsed .module-body,.module.collapsed .module-mini{display:none}
+  .card{border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:7px;background:#fff;overflow:hidden;transition:.15s}
+  .card:hover{box-shadow:0 3px 12px rgba(0,0,0,.09)}.card.custom{border-left-style:dashed}
+  .card-head{padding:11px 13px;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+  .card-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .code-badge{font-weight:500;font-size:10.5px;color:#fff;background:var(--blue);padding:3px 8px;border-radius:4px;letter-spacing:.4px;flex:none}
+  .pills{display:flex;gap:5px;margin-left:auto;flex-wrap:wrap}
+  .pill{font-size:10px;font-weight:400;padding:2px 8px;border-radius:11px;letter-spacing:.3px;white-space:nowrap}
+  .pill.temos-sim{background:#E3F1E4;color:var(--done)}.pill.temos-parcial{background:#FBF3DF;color:var(--warn)}
+  .pill.temos-nao{background:#F5E5E1;color:var(--late)}.pill.st{background:#EAF4FB;color:var(--navy)}
+  .pill.cnt{background:#EEF2F5;color:var(--text2)}
+  .card .name-primary{font-size:14px;font-weight:500;color:var(--text);line-height:1.25}
+  .card .name-sec{font-size:11.5px;color:var(--text2);line-height:1.3}
+  .card .name-sec b{font-weight:500;color:#7a7a7a;font-size:9.5px;text-transform:uppercase;letter-spacing:.4px;margin-right:4px}
+  .card .flag{font-size:11px;color:var(--navy);margin-top:2px}
+  .editor{display:none;padding:0 13px 13px;border-top:1px dashed var(--border);margin-top:2px}
+  .card.open .editor{display:block}.card.open .card-head{padding-bottom:6px}
+  .fld{margin-top:10px}.fld label{display:block;font-size:10.5px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:4px}
+  .fld input,.fld select,.fld textarea{width:100%;font-family:'Roboto';font-size:12.5px;font-weight:300;color:var(--text);border:1px solid var(--border);border-radius:5px;padding:7px 9px;background:#fff}
+  .fld textarea{resize:vertical;min-height:48px;line-height:1.4}
+  .fld-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .editor-actions{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:8px;flex-wrap:wrap}
+  .del-btn{font-size:11.5px;color:var(--late);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:'Roboto'}
+  .mini-btn{font-family:'Roboto';font-size:11.5px;cursor:pointer;border:1px solid var(--teal);background:#fff;color:var(--teal);padding:5px 10px;border-radius:5px}
+  .mini-btn:hover{background:var(--teal);color:#fff}
+  .edited-tag{font-size:10.5px;color:var(--teal);font-style:italic}
+  .empty{padding:36px;text-align:center;color:var(--text2);font-size:14px}
+
+  /* ===== MONTH NAV (tracking) ===== */
+  .month-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin:8px 0 16px}
+  .month-nav button{background:#fff;border:1px solid var(--border);color:var(--navy);width:34px;height:34px;
+    border-radius:50%;cursor:pointer;font-size:16px;line-height:1}
+  .month-nav button:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .month-nav .mlabel{font-family:'Rufina',serif;font-size:20px;font-weight:700;color:var(--navy);min-width:220px;text-align:center;text-transform:capitalize}
+
+  /* ===== TIMELINE ===== */
+  .timeline{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:20px}
+  .day{width:52px;height:52px;background:#fff;border:2px solid var(--blue);border-radius:50%;display:flex;
+    flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-weight:500;color:var(--blue);transition:.15s;position:relative}
+  .day .dn{font-family:'Rufina',serif;font-size:16px;line-height:1}
+  .day .dc{font-size:9px;color:var(--text2);margin-top:1px}
+  .day:hover{background:var(--blue);color:#fff}.day:hover .dc{color:#fff}
+  .day.sel{background:var(--blue);color:#fff}.day.sel .dc{color:#fff}
+  .day.today{box-shadow:0 0 0 3px rgba(0,131,202,.28)}
+  .day.sat{border-color:var(--lightblue)}.day.sun{border-color:var(--rust)}
+  .day.alldone{background:linear-gradient(135deg,var(--done),var(--done-dk))!important;border-color:var(--done-dk)!important;color:#fff!important}
+  .day.alldone .dc{color:#fff!important}
+  .day.hasitem::after{content:'';position:absolute;bottom:6px;width:5px;height:5px;border-radius:50%;background:var(--rust)}
+  .day.alldone.hasitem::after{background:#fff}
+  .day.dragover{background:var(--lightblue)!important;color:#003C64!important;transform:scale(1.06)}
+
+  .daypanel{background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px}
+  .daypanel h3{font-size:16px;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .case-row{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--border);border-left:4px solid var(--blue);
+    border-radius:6px;margin-bottom:8px;background:#fff;cursor:grab}
+  .case-row:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  .case-row.dragging{opacity:.45}
+  .case-row .ccode{font-size:10px;font-weight:500;color:#fff;background:var(--navy);padding:2px 7px;border-radius:4px;flex:none}
+  .case-row .ctit{flex:1;font-size:13px;color:var(--text)}
+  .case-row .cresp{font-size:11.5px;color:var(--text2)}
+  .case-row .cstat{font-size:10px;padding:2px 9px;border-radius:11px;white-space:nowrap;color:#fff}
+
+  /* ===== CALENDAR ===== */
+  .cal-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;font-size:11.5px;align-items:center;color:var(--text2)}
+  .leg-item{display:flex;align-items:center;gap:5px}.leg-dot{width:12px;height:12px;border-radius:3px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .cal-dow{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);text-align:center;padding:4px 0}
+  .cal-cell{min-height:96px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:5px;display:flex;flex-direction:column;gap:3px}
+  .cal-cell.empty{background:transparent;border:none}
+  .cal-cell.today{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue) inset}
+  .cal-cell.sat{background:#F4F9FC}.cal-cell.sun{background:#FBF3F1}
+  .cal-cell.dragover{background:var(--lightblue)}
+  .cal-daynum{font-size:11px;font-weight:500;color:var(--text2);align-self:flex-end}
+  .cal-cell.today .cal-daynum{color:var(--blue)}
+  .chip{font-size:10.5px;color:#fff;background:var(--blue);border-radius:4px;padding:3px 6px;cursor:grab;
+    line-height:1.25;display:flex;align-items:center;gap:4px;position:relative}
+  .chip.light{color:#003C64}.chip.dragging{opacity:.45}
+  .chip .chdot{width:9px;height:9px;border-radius:50%;border:1px solid rgba(255,255,255,.7);cursor:pointer;flex:none}
+  .chip .chtxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .cal-add{font-size:16px;color:var(--text2);cursor:pointer;text-align:center;opacity:0;transition:.15s}
+  .cal-cell:hover .cal-add{opacity:.7}
+
+  /* ===== KANBAN ===== */
+  .kb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .kb-col{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px;min-height:120px}
+  .kb-col.dragover{background:#EAF4FB;border-color:var(--blue)}
+  .kb-col h3{font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:2px solid}
+  .kb-col .kcount{margin-left:auto;font-size:12px;font-weight:400;color:var(--text2)}
+  .kb-card{border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:6px;padding:10px;margin-bottom:9px;background:#fff;cursor:grab}
+  .kb-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.09)}.kb-card.dragging{opacity:.45}
+  .kb-card .kcode{font-size:10px;font-weight:500;color:#fff;background:var(--navy);padding:2px 7px;border-radius:4px}
+  .kb-card .ktit{font-size:13px;color:var(--text);margin-top:6px;line-height:1.3}
+  .kb-card .kmeta{font-size:11px;color:var(--text2);margin-top:5px;display:flex;justify-content:space-between;gap:8px}
+  .kb-card.late{border-left-color:var(--late)}
+
+  /* ===== GANTT ===== */
+  .gantt-wrap{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px;overflow-x:auto}
+  table.gantt{border-collapse:collapse;width:100%;font-size:11px}
+  table.gantt th,table.gantt td{border:1px solid #E4E9ED;padding:0;text-align:center;height:26px}
+  table.gantt th.glabel,table.gantt td.glabel{text-align:left;padding:4px 8px;min-width:230px;font-size:12px;position:sticky;left:0;background:#fff;z-index:2}
+  table.gantt th{background:var(--bg-soft);color:var(--navy);font-weight:500;min-width:22px}
+  table.gantt th.wknd{background:#EAF1F5}
+  table.gantt td.gcell{min-width:22px}
+  table.gantt td.gcell.wknd{background:#F7FAFB}
+  table.gantt td.gcell.today{box-shadow:0 0 0 2px var(--blue) inset}
+  .gbar{height:15px;border-radius:4px;background:var(--blue);margin:auto;cursor:pointer}
+  .gproc{font-weight:500;color:var(--navy)}.gtit{color:var(--text2)}
+
+  /* ===== MODAL ===== */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,20,40,.42);display:none;align-items:center;justify-content:center;z-index:120;padding:20px}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;border-radius:10px;width:100%;max-width:520px;max-height:88vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  .modal-head{background:var(--blue);color:#fff;padding:13px 18px;font-family:'Rufina',serif;font-weight:700;font-size:16px;display:flex;justify-content:space-between;align-items:center}
+  .modal-head .x{cursor:pointer;font-size:20px;line-height:1;background:none;border:none;color:#fff}
+  .modal-body{padding:16px 18px}
+  .modal-foot{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .swatches{display:flex;gap:7px;flex-wrap:wrap;margin-top:5px}
+  .sw{width:26px;height:26px;border-radius:6px;cursor:pointer;border:2px solid transparent}
+  .sw.sel{border-color:#333;box-shadow:0 0 0 2px #fff inset}
+  .sw.none{background:#fff;border:1px dashed var(--border);color:var(--text2);font-size:10px;display:flex;align-items:center;justify-content:center}
+
+  /* bulk modal list */
+  .bulk-list{max-height:300px;overflow:auto;border:1px solid var(--border);border-radius:6px;padding:8px;margin-top:8px}
+  .bulk-day{font-size:11px;font-weight:500;color:var(--navy);margin:8px 0 4px;text-transform:uppercase;letter-spacing:.4px}
+  .bulk-item{display:flex;align-items:center;gap:8px;padding:5px 4px;font-size:12.5px;border-bottom:1px solid #eef2f5}
+  .bulk-item input{width:16px;height:16px}
+
+  footer.botbar{background:var(--blue);color:#fff;padding:12px 26px;margin-top:26px;display:flex;
+    justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px}
+  footer.botbar b{font-weight:500}footer.botbar .fr{opacity:.9;font-weight:300}
+
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);
+    color:#fff;padding:11px 22px;border-radius:7px;font-size:13px;box-shadow:0 4px 18px rgba(0,0,0,.25);
+    opacity:0;transition:.3s;z-index:200;pointer-events:none}
+  #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:150;overflow:hidden;display:none}
+  .conf{position:absolute;width:9px;height:14px;top:-20px;opacity:.95;border-radius:1px;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.6}}
+
+  @media(max-width:1000px){.kpi-strip{grid-template-columns:repeat(2,1fr)}.kb-grid{grid-template-columns:1fr}.module-body{grid-template-columns:1fr}}
+  @media print{nav.tabs,.toolbar,.lang-switch,.btn,.month-nav button,#toast{display:none!important}
+    body{background:#fff}.module.collapsed .module-body,.module.collapsed .module-mini{display:grid!important}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">S</div>
+    <div>
+      <h1 data-i="title">Cockpit AskHR + Linha do Tempo</h1>
+      <div class="sub" data-i="subtitle">Sonova Brasil &middot; Knowledge Capture &middot; Acompanhamento diário</div>
+    </div>
+  </div>
+  <div class="lang-switch" id="langSwitch">
+    <button data-lang="pt">PT</button><button data-lang="en">EN</button><button data-lang="es">ES</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-view="processos" data-i="nav_proc">Processos</button>
+  <button data-view="timeline" data-i="nav_timeline">Linha do Tempo</button>
+  <button data-view="calendario" data-i="nav_cal">Calendário</button>
+  <button data-view="kanban" data-i="nav_kanban">Fluxo</button>
+  <button data-view="gantt" data-i="nav_gantt">Gantt</button>
+</nav>
+
+<div class="kpi-strip" id="kpiStrip"></div>
+<div class="overall" id="overall">
+  <div class="prog-wrap"><div class="prog-bar" id="progBar"></div></div>
+  <div class="prog-cap"><span id="progLbl"></span><span id="progTxt">0%</span></div>
+</div>
+
+<div class="toolbar" id="toolbar">
+  <input type="text" id="search" placeholder="">
+  <select id="fModule" class="proc-only"></select>
+  <select id="fTemos" class="proc-only"></select>
+  <select id="fStatus" class="proc-only"></select>
+  <select id="fCaseStatus" class="track-only"></select>
+  <button class="btn" id="addProcBtn" data-i="btn_add_proc">+ Processo</button>
+  <button class="btn" id="addCaseBtn" data-i="btn_add_case">+ Caso</button>
+  <button class="btn ghost track-only" id="bulkBtn" data-i="btn_bulk">Transferir em lote</button>
+  <button class="btn ghost proc-only" id="expandAll" data-i="btn_expand">Expandir</button>
+  <button class="btn ghost proc-only" id="collapseAll" data-i="btn_collapse">Recolher</button>
+  <button class="btn" id="xlsxBtn" data-i="btn_xlsx">Excel</button>
+  <button class="btn ghost" id="jsonBtn" data-i="btn_json">Backup JSON</button>
+  <button class="btn ghost" id="importBtn" data-i="btn_import">Importar</button>
+  <button class="btn ghost" id="printBtn" data-i="btn_print">Imprimir</button>
+  <button class="btn wine" id="resetBtn" data-i="btn_reset">Restaurar</button>
+  <input type="file" id="fileInput" accept=".json" style="display:none">
+</div>
+
+<main id="app"></main>
+
+<footer class="botbar">
+  <div class="fr"><b>Cockpit AskHR + Linha do Tempo</b> &middot; Sonova OFC &middot; Anderson Souza</div>
+  <div class="fr" id="footStamp"></div>
+</footer>
+
+<!-- CASE MODAL -->
+<div class="modal-bg" id="caseModalBg">
+  <div class="modal">
+    <div class="modal-head"><span id="caseModalTitle"></span><button class="x" id="caseModalX">&times;</button></div>
+    <div class="modal-body">
+      <div class="fld"><label id="lb_proc"></label><select id="cmProc"></select></div>
+      <div class="fld"><label id="lb_tit"></label><input id="cmTit"></div>
+      <div class="fld-row">
+        <div class="fld"><label id="lb_date"></label><input type="date" id="cmDate"></div>
+        <div class="fld"><label id="lb_datefim"></label><input type="date" id="cmDateFim"></div>
+      </div>
+      <div class="fld-row">
+        <div class="fld"><label id="lb_cstat"></label><select id="cmStatus"></select></div>
+        <div class="fld"><label id="lb_resp"></label><input id="cmResp"></div>
+      </div>
+      <div class="fld"><label id="lb_obs"></label><textarea id="cmObs"></textarea></div>
+      <div class="fld"><label id="lb_cor"></label><div class="swatches" id="cmSwatches"></div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="del-btn" id="cmDel"></button>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost" id="cmCancel"></button>
+        <button class="btn" id="cmSave"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BULK MODAL -->
+<div class="modal-bg" id="bulkModalBg">
+  <div class="modal">
+    <div class="modal-head"><span id="bulkTitle"></span><button class="x" id="bulkX">&times;</button></div>
+    <div class="modal-body">
+      <div class="fld-row">
+        <div class="fld"><label id="lb_bulk_dest"></label><select id="bulkDest"></select></div>
+        <div class="fld"><label id="lb_bulk_filter"></label><select id="bulkFilter"></select></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="mini-btn" id="bulkSelVis"></button>
+        <button class="mini-btn" id="bulkClear" style="border-color:var(--text2);color:var(--text2)"></button>
+      </div>
+      <div class="bulk-list" id="bulkList"></div>
+    </div>
+    <div class="modal-foot">
+      <span></span>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost" id="bulkCancel"></button>
+        <button class="btn" id="bulkMove"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="confetti"></div>
+
+<script>
+/* ============================================================================
+   COCKPIT ASKHR + LINHA DO TEMPO - SONOVA BRASIL
+   Single-file HTML - padrao Sonova OFC - trilingue EN/PT/ES
+   Catalogo (44 processos) + acompanhamento diario (casos): Linha do Tempo,
+   Calendario, Fluxo (Kanban), Gantt. localStorage duas chaves. Editavel.
+   ============================================================================ */
+
+const LS_MAIN='sonova_askhr_lt_v1', LS_BKP='sonova_askhr_lt_v1_bkp';
+
+const MOD_COLOR={'HR-010':'#0083CA','HR-020':'#003C64','HR-030':'#005A64','HR-060':'#7D0041',
+  'HR-080':'#8C321E','HR-090':'#0083CA','HR-110':'#003C64','HR-140':'#005A64','HR-150':'#7D0041','HR-170':'#8C321E','HR-190':'#0083CA'};
+
+const MODULES=[
+  {id:'HR-010',en:'Position & Organization Management',pt:'Gestão de Posições e Organização',es:'Gestión de Posiciones y Organización'},
+  {id:'HR-020',en:'Hiring & Offer',pt:'Contratação e Oferta',es:'Contratación y Oferta'},
+  {id:'HR-030',en:'Onboarding',pt:'Integração (Onboarding)',es:'Incorporación (Onboarding)'},
+  {id:'HR-060',en:'Employee Data Management',pt:'Gestão de Dados do Colaborador',es:'Gestión de Datos del Empleado'},
+  {id:'HR-080',en:'Benefits',pt:'Benefícios',es:'Beneficios'},
+  {id:'HR-090',en:'Leave & Absence',pt:'Afastamentos e Licenças',es:'Licencias y Ausencias'},
+  {id:'HR-110',en:'Time Management',pt:'Gestão de Tempo e Ponto',es:'Gestión de Tiempo'},
+  {id:'HR-140',en:'Separation',pt:'Desligamento',es:'Separación'},
+  {id:'HR-150',en:'Payroll',pt:'Folha de Pagamento',es:'Nómina'},
+  {id:'HR-170',en:'Contingent Workforce',pt:'Força de Trabalho Contingente',es:'Fuerza Laboral Contingente'},
+  {id:'HR-190',en:'Reporting',pt:'Relatórios',es:'Informes'}
+];
+
+const SEED=[
+  {code:'HR-010-030',mod:'HR-010',en:'Create and Maintain Positions',pt:'Criar e Manter Posições',es:'Crear y Mantener Posiciones'},
+  {code:'HR-010-040',mod:'HR-010',en:'Monitor Open Positions',pt:'Monitorar Posições em Aberto',es:'Monitorear Posiciones Abiertas'},
+  {code:'HR-010-050',mod:'HR-010',en:'Establish and Maintain Organization Structures',pt:'Estabelecer e Manter Estruturas Organizacionais',es:'Establecer y Mantener Estructuras Organizacionales'},
+  {code:'HR-020-140',mod:'HR-020',en:'Prepare and Extend Job Offer / Contract',pt:'Preparar e Estender Oferta de Emprego / Contrato',es:'Preparar y Extender Oferta de Empleo / Contrato'},
+  {code:'HR-020-150',mod:'HR-020',en:'Perform Pre-Hire Due Diligence',pt:'Realizar Due Diligence Pré-Contratação',es:'Realizar Debida Diligencia Previa a la Contratación'},
+  {code:'HR-030-010',mod:'HR-030',en:'Conduct Preboarding',pt:'Conduzir Preboarding (Pré-Integração)',es:'Realizar Preboarding (Preincorporación)'},
+  {code:'HR-030-020',mod:'HR-030',en:'Manage Day 1 Activities',pt:'Gerenciar Atividades do Dia 1',es:'Gestionar Actividades del Día 1'},
+  {code:'HR-030-030',mod:'HR-030',en:'Manage First 90 Days',pt:'Gerenciar os Primeiros 90 Dias',es:'Gestionar los Primeros 90 Días'},
+  {code:'HR-060-010',mod:'HR-060',en:'Personal Data Change',pt:'Alteração de Dados Pessoais',es:'Cambio de Datos Personales'},
+  {code:'HR-060-020',mod:'HR-060',en:'Work Data Change',pt:'Alteração de Dados Funcionais',es:'Cambio de Datos Laborales'},
+  {code:'HR-060-030',mod:'HR-060',en:'Employee Movement',pt:'Movimentação de Colaborador',es:'Movimiento de Empleado'},
+  {code:'HR-060-040',mod:'HR-060',en:'Mass Data Changes',pt:'Alterações de Dados em Massa',es:'Cambios de Datos Masivos'},
+  {code:'HR-060-050',mod:'HR-060',en:'Manage Data Quality / Corrections',pt:'Gerenciar Qualidade / Correções de Dados',es:'Gestionar Calidad / Correcciones de Datos'},
+  {code:'HR-060-060',mod:'HR-060',en:'Employee Contract Management',pt:'Gestão de Contrato do Colaborador',es:'Gestión de Contrato del Empleado'},
+  {code:'HR-060-070',mod:'HR-060',en:'Employee File Management',pt:'Gestão de Arquivo / Prontuário do Colaborador',es:'Gestión de Expediente del Empleado'},
+  {code:'HR-060-080',mod:'HR-060',en:'Employment Verification',pt:'Verificação de Vínculo Empregatício',es:'Verificación de Empleo'},
+  {code:'HR-080-010',mod:'HR-080',en:'Manage Benefits Enrollment',pt:'Gerenciar Adesão a Benefícios',es:'Gestionar Inscripción a Beneficios'},
+  {code:'HR-080-040',mod:'HR-080',en:'Process Benefits Termination',pt:'Processar Encerramento de Benefícios',es:'Procesar Terminación de Beneficios'},
+  {code:'HR-090-010',mod:'HR-090',en:'Support Leave Decisions',pt:'Apoiar Decisões de Afastamento / Licença',es:'Apoyar Decisiones de Licencia'},
+  {code:'HR-090-020',mod:'HR-090',en:'Manage Leave Requests and Modifications',pt:'Gerenciar Solicitações e Modificações de Afastamento',es:'Gestionar Solicitudes y Modificaciones de Licencia'},
+  {code:'HR-090-030',mod:'HR-090',en:'Manage Alternative Duty and Schedule Modification Requests',pt:'Gerenciar Solicitações de Atividade Alternativa e Modificação de Jornada',es:'Gestionar Solicitudes de Tarea Alternativa y Modificación de Horario'},
+  {code:'HR-090-040',mod:'HR-090',en:'Manage Return to Work',pt:'Gerenciar Retorno ao Trabalho',es:'Gestionar Retorno al Trabajo'},
+  {code:'HR-090-050',mod:'HR-090',en:'Conduct Appeal Review',pt:'Conduzir Análise de Recurso',es:'Realizar Revisión de Apelación'},
+  {code:'HR-090-060',mod:'HR-090',en:'Manage Long Term Disability',pt:'Gerenciar Afastamento por Invalidez de Longo Prazo',es:'Gestionar Incapacidad de Largo Plazo'},
+  {code:'HR-110-010',mod:'HR-110',en:'Setup Holiday Calendar',pt:'Configurar Calendário de Feriados',es:'Configurar Calendario de Feriados'},
+  {code:'HR-110-020',mod:'HR-110',en:'Create and Allocate Schedule',pt:'Criar e Alocar Escala / Jornada',es:'Crear y Asignar Horario'},
+  {code:'HR-110-030',mod:'HR-110',en:'Time-off Balance Management',pt:'Gestão de Saldo de Folgas / Ausências',es:'Gestión de Saldo de Ausencias'},
+  {code:'HR-110-040',mod:'HR-110',en:'Process Time-Off Request',pt:'Processar Solicitação de Folga / Ausência',es:'Procesar Solicitud de Ausencia'},
+  {code:'HR-110-050',mod:'HR-110',en:'Process Time-Off Payout',pt:'Processar Pagamento de Folgas / Ausências',es:'Procesar Pago de Ausencias'},
+  {code:'HR-110-060',mod:'HR-110',en:'Capture Time',pt:'Capturar Ponto / Marcações',es:'Capturar Tiempo / Marcaciones'},
+  {code:'HR-110-070',mod:'HR-110',en:'Review, Resolve, and Approve Time',pt:'Revisar, Resolver e Aprovar Ponto',es:'Revisar, Resolver y Aprobar Tiempo'},
+  {code:'HR-110-080',mod:'HR-110',en:'Process Time',pt:'Processar Ponto / Apuração',es:'Procesar Tiempo'},
+  {code:'HR-110-090',mod:'HR-110',en:'Process Historical Adjustments',pt:'Processar Ajustes Retroativos',es:'Procesar Ajustes Históricos'},
+  {code:'HR-140-010',mod:'HR-140',en:'Process Voluntary Employee Separation',pt:'Processar Desligamento Voluntário do Colaborador',es:'Procesar Separación Voluntaria del Empleado'},
+  {code:'HR-140-020',mod:'HR-140',en:'Process Involuntary Employee Separation',pt:'Processar Desligamento Involuntário do Colaborador',es:'Procesar Separación Involuntaria del Empleado'},
+  {code:'HR-140-030',mod:'HR-140',en:'Manage Reduction in Force (Redundancy)',pt:'Gerenciar Redução de Quadro (Demissão em Massa)',es:'Gestionar Reducción de Personal (Redundancia)'},
+  {code:'HR-140-040',mod:'HR-140',en:'Manage Separation Due to Death',pt:'Gerenciar Desligamento por Falecimento',es:'Gestionar Separación por Fallecimiento'},
+  {code:'HR-140-050',mod:'HR-140',en:'Manage Retirement',pt:'Gerenciar Aposentadoria',es:'Gestionar Jubilación'},
+  {code:'HR-150-010',mod:'HR-150',en:'Maintain Payroll Data',pt:'Manter Dados da Folha de Pagamento',es:'Mantener Datos de Nómina'},
+  {code:'HR-150-130',mod:'HR-150',en:'Process Adjustments',pt:'Processar Ajustes (Folha)',es:'Procesar Ajustes (Nómina)'},
+  {code:'HR-170-040',mod:'HR-170',en:'Contingent Worker On-boarding',pt:'Integração de Trabalhador Contingente / Terceiro',es:'Incorporación de Trabajador Contingente'},
+  {code:'HR-170-055',mod:'HR-170',en:'Contract Contingent Worker',pt:'Contratar Trabalhador Contingente / Terceiro',es:'Contratar Trabajador Contingente'},
+  {code:'HR-170-110',mod:'HR-170',en:'Contingent Worker Off-boarding',pt:'Desligamento de Trabalhador Contingente / Terceiro',es:'Desvinculación de Trabajador Contingente'},
+  {code:'HR-190-020',mod:'HR-190',en:'Manage Ad hoc Report Requests',pt:'Gerenciar Solicitações de Relatórios Ad Hoc',es:'Gestionar Solicitudes de Informes Ad Hoc'}
+];
+
+const STATUS_OPTS=[
+  {v:'nao_mapeado',en:'Not Mapped',pt:'Não Mapeado',es:'No Mapeado'},
+  {v:'em_captura',en:'In Capture',pt:'Em Captura',es:'En Captura'},
+  {v:'documentado',en:'Documented',pt:'Documentado',es:'Documentado'},
+  {v:'validado',en:'Validated',pt:'Validado',es:'Validado'},
+  {v:'na',en:'N/A',pt:'N/A',es:'N/A'}
+];
+const TEMOS_OPTS=[
+  {v:'nao',en:'No',pt:'Não',es:'No'},
+  {v:'parcial',en:'Partial',pt:'Parcial',es:'Parcial'},
+  {v:'sim',en:'Yes',pt:'Sim',es:'Sí'}
+];
+const CASE_STATUS=[
+  {v:'pendente',en:'Pending',pt:'Pendente',es:'Pendiente',color:'#646464'},
+  {v:'andamento',en:'In Progress',pt:'Em andamento',es:'En curso',color:'#0083CA'},
+  {v:'concluido',en:'Done',pt:'Concluído',es:'Concluido',color:'#2E7D32'}
+];
+const PALETTE=[
+  {v:'',hex:'',name:{pt:'Auto (status)',en:'Auto (status)',es:'Auto (estado)'}},
+  {v:'blue',hex:'#0083CA',name:{pt:'Azul Sonova',en:'Sonova Blue',es:'Azul Sonova'}},
+  {v:'navy',hex:'#003C64',name:{pt:'Azul Escuro',en:'Dark Blue',es:'Azul Oscuro'}},
+  {v:'teal',hex:'#005A64',name:{pt:'Petróleo',en:'Petrol',es:'Petróleo'}},
+  {v:'light',hex:'#6EB4DC',name:{pt:'Azul Claro',en:'Light Blue',es:'Azul Claro'}},
+  {v:'wine',hex:'#7D0041',name:{pt:'Bordô',en:'Wine',es:'Borgoña'}},
+  {v:'rust',hex:'#8C321E',name:{pt:'Terracota',en:'Terracotta',es:'Terracota'}}
+];
+
+const I18N={
+  pt:{title:'Cockpit AskHR + Linha do Tempo',subtitle:'Sonova Brasil · Knowledge Capture · Acompanhamento diário',
+    nav_proc:'Processos',nav_timeline:'Linha do Tempo',nav_cal:'Calendário',nav_kanban:'Fluxo',nav_gantt:'Gantt',
+    ph_search_proc:'Buscar processo por código ou nome...',ph_search_case:'Buscar caso por código, título ou responsável...',
+    f_all_mod:'Todos os módulos',f_all_temos:'Temos: todos',f_all_status:'Status: todos',f_all_cstatus:'Status do caso: todos',
+    btn_add_proc:'+ Processo',btn_add_case:'+ Caso',btn_bulk:'Transferir em lote',btn_expand:'Expandir',btn_collapse:'Recolher',
+    btn_xlsx:'Excel',btn_json:'Backup JSON',btn_import:'Importar',btn_print:'Imprimir',btn_reset:'Restaurar',
+    k_total:'Total de processos',k_sim:'Temos (Sim)',k_parcial:'Parcial',k_nao:'Não temos',k_doc:'Documentado/Validado',
+    c_total:'Casos',c_done:'Concluídos',c_prog:'Em andamento',c_pend:'Pendentes',c_late:'Atrasados',
+    prog_proc:'Progresso de documentação (Documentado + Validado)',prog_case:'Progresso de execução (casos concluídos)',
+    l_en:'Inglês (EN)',l_pt:'Português (PT)',l_es:'Espanhol (ES)',l_temos:'Temos o processo?',l_status:'Status de captura',
+    l_owner:'Responsável / SME',l_notes:'Observações',ph_owner:'Ex.: Anderson Souza',ph_notes:'Lacunas, sistema, referência legal (CLT/eSocial)...',
+    del:'Excluir',reset_one:'Restaurar original',edited:'editado',track_here:'+ Caso',proc_cases:'caso(s)',
+    empty_proc:'Nenhum processo encontrado com os filtros atuais.',empty_day:'Sem casos neste dia. Use "+ Caso neste dia".',
+    empty_cases:'Nenhum caso ainda. Crie um em "+ Caso" ou pelo botão "+ Caso" em cada processo.',
+    add_case_here:'+ Caso neste dia',day_of:'Casos do dia',selected_day:'Dia selecionado',
+    cm_new:'Novo caso',cm_edit:'Editar caso',lb_proc:'Processo (do catálogo)',lb_tit:'Título / descrição do caso',
+    lb_date:'Data (início)',lb_datefim:'Prazo (fim) — opcional',lb_cstat:'Status do caso',lb_resp:'Responsável',lb_obs:'Observações',lb_cor:'Cor (paleta Sonova)',
+    cm_save:'Salvar',cm_cancel:'Cancelar',cm_del:'Excluir caso',cm_free:'(livre / sem processo)',
+    bulk_title:'Transferir casos em lote',lb_bulk_dest:'Mover para o dia',lb_bulk_filter:'Filtrar por status',bulk_selvis:'Selecionar visíveis',bulk_clear:'Limpar seleção',bulk_move:'Transferir',bulk_cancel:'Cancelar',bulk_none:'Nenhum caso selecionado.',
+    kb_pend:'Pendente',kb_and:'Em andamento',kb_done:'Concluído',
+    dow:['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],
+    saved:'Salvo automaticamente',added_proc:'Processo adicionado',added_case:'Caso adicionado',deleted:'Excluído',
+    reset_done:'Padrão restaurado',imported:'Dados importados',bad_file:'Arquivo inválido',
+    reset_confirm:'Restaurar catálogo (44 processos) e apagar TODOS os casos? Todas as edições serão perdidas.',
+    del_confirm:'Excluir este item?',quota:'Armazenamento cheio - exporte um backup.',xlsx_fail:'Excel indisponível - exportado como CSV.',
+    moved:'caso(s) movido(s)',all_done:'Parabéns! Todos os casos concluídos.',new_code:'HR-000-000',new_name:'Novo processo',new_case:'Novo caso'
+  },
+  en:{title:'AskHR Cockpit + Timeline',subtitle:'Sonova Brazil · Knowledge Capture · Daily tracking',
+    nav_proc:'Processes',nav_timeline:'Timeline',nav_cal:'Calendar',nav_kanban:'Flow',nav_gantt:'Gantt',
+    ph_search_proc:'Search process by code or name...',ph_search_case:'Search case by code, title or owner...',
+    f_all_mod:'All modules',f_all_temos:'Have: all',f_all_status:'Status: all',f_all_cstatus:'Case status: all',
+    btn_add_proc:'+ Process',btn_add_case:'+ Case',btn_bulk:'Bulk transfer',btn_expand:'Expand',btn_collapse:'Collapse',
+    btn_xlsx:'Excel',btn_json:'Backup JSON',btn_import:'Import',btn_print:'Print',btn_reset:'Reset',
+    k_total:'Total processes',k_sim:'We have (Yes)',k_parcial:'Partial',k_nao:'Do not have',k_doc:'Documented/Validated',
+    c_total:'Cases',c_done:'Done',c_prog:'In progress',c_pend:'Pending',c_late:'Overdue',
+    prog_proc:'Documentation progress (Documented + Validated)',prog_case:'Execution progress (cases done)',
+    l_en:'English (EN)',l_pt:'Portuguese (PT)',l_es:'Spanish (ES)',l_temos:'Do we have the process?',l_status:'Capture status',
+    l_owner:'Owner / SME',l_notes:'Notes',ph_owner:'e.g. Anderson Souza',ph_notes:'Gaps, system, legal reference (CLT/eSocial)...',
+    del:'Delete',reset_one:'Restore original',edited:'edited',track_here:'+ Case',proc_cases:'case(s)',
+    empty_proc:'No process matches the current filters.',empty_day:'No cases on this day. Use "+ Case".',
+    empty_cases:'No cases yet. Create one via "+ Case" or the "+ Case" button on each process.',
+    add_case_here:'+ Case on this day',day_of:'Cases of the day',selected_day:'Selected day',
+    cm_new:'New case',cm_edit:'Edit case',lb_proc:'Process (from catalog)',lb_tit:'Case title / description',
+    lb_date:'Date (start)',lb_datefim:'Due (end) — optional',lb_cstat:'Case status',lb_resp:'Owner',lb_obs:'Notes',lb_cor:'Color (Sonova palette)',
+    cm_save:'Save',cm_cancel:'Cancel',cm_del:'Delete case',cm_free:'(free / no process)',
+    bulk_title:'Bulk transfer cases',lb_bulk_dest:'Move to day',lb_bulk_filter:'Filter by status',bulk_selvis:'Select visible',bulk_clear:'Clear',bulk_move:'Transfer',bulk_cancel:'Cancel',bulk_none:'No case selected.',
+    kb_pend:'Pending',kb_and:'In progress',kb_done:'Done',
+    dow:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    saved:'Saved automatically',added_proc:'Process added',added_case:'Case added',deleted:'Deleted',
+    reset_done:'Default restored',imported:'Data imported',bad_file:'Invalid file',
+    reset_confirm:'Reset catalog (44 processes) and delete ALL cases? All edits will be lost.',
+    del_confirm:'Delete this item?',quota:'Storage full - export a backup.',xlsx_fail:'Excel unavailable - exported as CSV.',
+    moved:'case(s) moved',all_done:'Congratulations! All cases completed.',new_code:'HR-000-000',new_name:'New process',new_case:'New case'
+  },
+  es:{title:'Cockpit AskHR + Línea de Tiempo',subtitle:'Sonova Brasil · Knowledge Capture · Seguimiento diario',
+    nav_proc:'Procesos',nav_timeline:'Línea de Tiempo',nav_cal:'Calendario',nav_kanban:'Flujo',nav_gantt:'Gantt',
+    ph_search_proc:'Buscar proceso por código o nombre...',ph_search_case:'Buscar caso por código, título o responsable...',
+    f_all_mod:'Todos los módulos',f_all_temos:'Tenemos: todos',f_all_status:'Estado: todos',f_all_cstatus:'Estado del caso: todos',
+    btn_add_proc:'+ Proceso',btn_add_case:'+ Caso',btn_bulk:'Transferir en lote',btn_expand:'Expandir',btn_collapse:'Contraer',
+    btn_xlsx:'Excel',btn_json:'Backup JSON',btn_import:'Importar',btn_print:'Imprimir',btn_reset:'Restaurar',
+    k_total:'Total de procesos',k_sim:'Tenemos (Sí)',k_parcial:'Parcial',k_nao:'No tenemos',k_doc:'Documentado/Validado',
+    c_total:'Casos',c_done:'Concluidos',c_prog:'En curso',c_pend:'Pendientes',c_late:'Atrasados',
+    prog_proc:'Progreso de documentación (Documentado + Validado)',prog_case:'Progreso de ejecución (casos concluidos)',
+    l_en:'Inglés (EN)',l_pt:'Portugués (PT)',l_es:'Español (ES)',l_temos:'¿Tenemos el proceso?',l_status:'Estado de captura',
+    l_owner:'Responsable / SME',l_notes:'Observaciones',ph_owner:'Ej.: Anderson Souza',ph_notes:'Brechas, sistema, referencia legal (CLT/eSocial)...',
+    del:'Eliminar',reset_one:'Restaurar original',edited:'editado',track_here:'+ Caso',proc_cases:'caso(s)',
+    empty_proc:'Ningún proceso coincide con los filtros.',empty_day:'Sin casos en este día. Use "+ Caso".',
+    empty_cases:'Aún no hay casos. Cree uno con "+ Caso" o el botón "+ Caso" en cada proceso.',
+    add_case_here:'+ Caso en este día',day_of:'Casos del día',selected_day:'Día seleccionado',
+    cm_new:'Nuevo caso',cm_edit:'Editar caso',lb_proc:'Proceso (del catálogo)',lb_tit:'Título / descripción del caso',
+    lb_date:'Fecha (inicio)',lb_datefim:'Vencimiento (fin) — opcional',lb_cstat:'Estado del caso',lb_resp:'Responsable',lb_obs:'Observaciones',lb_cor:'Color (paleta Sonova)',
+    cm_save:'Guardar',cm_cancel:'Cancelar',cm_del:'Eliminar caso',cm_free:'(libre / sin proceso)',
+    bulk_title:'Transferir casos en lote',lb_bulk_dest:'Mover al día',lb_bulk_filter:'Filtrar por estado',bulk_selvis:'Seleccionar visibles',bulk_clear:'Limpiar',bulk_move:'Transferir',bulk_cancel:'Cancelar',bulk_none:'Ningún caso seleccionado.',
+    kb_pend:'Pendiente',kb_and:'En curso',kb_done:'Concluido',
+    dow:['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],
+    saved:'Guardado automáticamente',added_proc:'Proceso agregado',added_case:'Caso agregado',deleted:'Eliminado',
+    reset_done:'Predeterminado restaurado',imported:'Datos importados',bad_file:'Archivo inválido',
+    reset_confirm:'¿Restaurar catálogo (44 procesos) y eliminar TODOS los casos? Se perderán todas las ediciones.',
+    del_confirm:'¿Eliminar este elemento?',quota:'Almacenamiento lleno - exporte un backup.',xlsx_fail:'Excel no disponible - exportado como CSV.',
+    moved:'caso(s) movido(s)',all_done:'¡Felicidades! Todos los casos completados.',new_code:'HR-000-000',new_name:'Nuevo proceso',new_case:'Nuevo caso'
+  }
+};
+
+/* ===================== ESTADO ===================== */
+let LANG='pt';
+let VIEW='processos';
+let state={catalog:[],cases:[],collapsed:{}};
+const filters={search:'',mod:'',temos:'',status:'',cstatus:''};
+let curYear,curMonth,selDay;
+let editingCaseId=null,editingColor='';
+let allDoneFlag=false;
+
+/* ===================== PERSISTENCIA ===================== */
+function persist(){
+  try{const p=JSON.stringify(state);localStorage.setItem(LS_MAIN,p);localStorage.setItem(LS_BKP,p);}
+  catch(e){if(e&&(e.name==='QuotaExceededError'||e.code===22))toast(t('quota'));}
+}
+function loadState(){
+  let raw=null;try{raw=localStorage.getItem(LS_MAIN);}catch(e){}
+  if(!raw){try{raw=localStorage.getItem(LS_BKP);}catch(e){}}
+  if(raw){try{const p=JSON.parse(raw);
+    if(p&&Array.isArray(p.catalog)&&p.catalog.length){
+      state={catalog:p.catalog,cases:Array.isArray(p.cases)?p.cases:[],collapsed:p.collapsed||{}};
+      state.cases.forEach(c=>{if(!c.id)c.id=uid();});
+      return;}
+  }catch(e){}}
+  state={catalog:SEED.map(seedToItem),cases:[],collapsed:{}};
+}
+function seedToItem(s){return{code:s.code,mod:s.mod,en:s.en,pt:s.pt,es:s.es,temos:'nao',status:'nao_mapeado',
+  owner:'',notes:'',custom:false,edited:false,oen:s.en,opt:s.pt,oes:s.es};}
+
+/* ===================== HELPERS ===================== */
+function t(k){return (I18N[LANG]&&I18N[LANG][k])||(I18N.pt[k]||k);}
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function uid(){return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function statusLabel(v){const o=STATUS_OPTS.find(x=>x.v===v);return o?o[LANG]:v;}
+function temosLabel(v){const o=TEMOS_OPTS.find(x=>x.v===v);return o?o[LANG]:v;}
+function csObj(v){return CASE_STATUS.find(x=>x.v===v)||CASE_STATUS[0];}
+function csLabel(v){return csObj(v)[LANG];}
+function modObj(id){return MODULES.find(x=>x.id===id);}
+function modName(id){const m=modObj(id);return m?m[LANG]:id;}
+function procByCode(code){return state.catalog.find(x=>x.code===code);}
+function palByV(v){return PALETTE.find(p=>p.v===v)||PALETTE[0];}
+function langOrder(){return LANG==='pt'?['pt','en','es']:LANG==='en'?['en','pt','es']:['es','en','pt'];}
+function langTag(l){return l==='pt'?'PT':l==='en'?'EN':'ES';}
+function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),1900);}
+function pad(n){return String(n).padStart(2,'0');}
+function ymd(y,m,d){return y+'-'+pad(m+1)+'-'+pad(d);}
+function todayYMD(){const d=new Date();return ymd(d.getFullYear(),d.getMonth(),d.getDate());}
+function parseYMD(s){if(!s)return null;const p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+function isLate(c){if(c.status==='concluido')return false;const d=parseYMD(c.dateFim||c.date);if(!d)return false;const today=parseYMD(todayYMD());return d<today;}
+function monthLabel(y,m){return new Date(y,m,1).toLocaleDateString(LANG==='pt'?'pt-BR':LANG==='es'?'es-ES':'en-US',{month:'long',year:'numeric'});}
+function caseColor(c){if(c.cor){const p=palByV(c.cor);if(p.hex)return p.hex;}return csObj(c.status).color;}
+function isLightColor(hex){return hex==='#6EB4DC';}
+
+/* ===================== RENDER ROUTER ===================== */
+function render(){
+  applyChrome();
+  document.querySelectorAll('.proc-only').forEach(e=>e.classList.toggle('hidden',VIEW!=='processos'));
+  document.querySelectorAll('.track-only').forEach(e=>e.classList.toggle('hidden',VIEW==='processos'));
+  document.getElementById('addProcBtn').classList.toggle('hidden',VIEW!=='processos');
+  document.getElementById('addCaseBtn').classList.toggle('hidden',VIEW==='processos');
+  document.getElementById('overall').style.display='block';
+  buildKPIs();
+  const app=document.getElementById('app');app.innerHTML='';
+  if(VIEW==='processos')renderProcessos(app);
+  else if(VIEW==='timeline')renderTimeline(app);
+  else if(VIEW==='calendario')renderCalendario(app);
+  else if(VIEW==='kanban')renderKanban(app);
+  else if(VIEW==='gantt')renderGantt(app);
+  checkAllDone();
+}
+
+/* ===================== KPIs ===================== */
+function buildKPIs(){
+  const strip=document.getElementById('kpiStrip');
+  const progBar=document.getElementById('progBar'),progLbl=document.getElementById('progLbl'),progTxt=document.getElementById('progTxt');
+  if(VIEW==='processos'){
+    const it=state.catalog,total=it.length;
+    const sim=it.filter(x=>x.temos==='sim').length,parc=it.filter(x=>x.temos==='parcial').length,nao=it.filter(x=>x.temos==='nao').length;
+    const doc=it.filter(x=>x.status==='documentado'||x.status==='validado').length;
+    strip.innerHTML=
+      kpiCard('total','k-total',total,t('k_total'))+kpiCard('sim','k-sim',sim,t('k_sim'))+
+      kpiCard('parcial','k-parcial',parc,t('k_parcial'))+kpiCard('nao','k-nao',nao,t('k_nao'))+
+      kpiCard('doc','k-doc',doc,t('k_doc'));
+    const pct=total?Math.round(doc/total*100):0;
+    progBar.style.width=pct+'%';progLbl.textContent=t('prog_proc');progTxt.textContent=pct+'% ('+doc+'/'+total+')';
+  }else{
+    const cs=state.cases,total=cs.length;
+    const done=cs.filter(c=>c.status==='concluido').length,prog=cs.filter(c=>c.status==='andamento').length;
+    const pend=cs.filter(c=>c.status==='pendente').length,late=cs.filter(isLate).length;
+    strip.innerHTML=
+      kpiCard('ctotal','k-prog',total,t('c_total'))+kpiCard('cdone','k-done',done,t('c_done'))+
+      kpiCard('cprog','k-prog',prog,t('c_prog'))+kpiCard('cpend','k-pend',pend,t('c_pend'))+
+      kpiCard('clate','k-late',late,t('c_late'));
+    const pct=total?Math.round(done/total*100):0;
+    progBar.style.width=pct+'%';progLbl.textContent=t('prog_case');progTxt.textContent=pct+'% ('+done+'/'+total+')';
+  }
+  strip.querySelectorAll('.kpi').forEach(k=>k.addEventListener('click',()=>onKpi(k.dataset.k)));
+}
+function kpiCard(key,cls,num,lbl){return '<div class="kpi '+cls+(kpiSel(key)?' sel':'')+'" data-k="'+key+'"><div class="num">'+num+'</div><div class="lbl">'+esc(lbl)+'</div></div>';}
+function kpiSel(key){
+  if(VIEW==='processos'){if(key==='sim'||key==='parcial'||key==='nao')return filters.temos===key;if(key==='doc')return filters.status==='documentado';return false;}
+  else{if(key==='cdone')return filters.cstatus==='concluido';if(key==='cprog')return filters.cstatus==='andamento';if(key==='cpend')return filters.cstatus==='pendente';if(key==='clate')return filters.cstatus==='atrasado';return false;}
+}
+function onKpi(key){
+  if(VIEW==='processos'){
+    if(key==='total'){filters.temos='';filters.status='';}
+    else if(['sim','parcial','nao'].includes(key)){filters.temos=filters.temos===key?'':key;filters.status='';}
+    else if(key==='doc'){filters.status=filters.status==='documentado'?'':'documentado';filters.temos='';}
+    syncFilterSelects();
+  }else{
+    const map={cdone:'concluido',cprog:'andamento',cpend:'pendente',clate:'atrasado'};
+    if(key==='ctotal')filters.cstatus='';
+    else if(map[key])filters.cstatus=filters.cstatus===map[key]?'':map[key];
+    document.getElementById('fCaseStatus').value=filters.cstatus;
+  }
+  render();
+}
+
+/* ===================== PROCESSOS ===================== */
+function passProc(it){
+  if(filters.mod&&it.mod!==filters.mod)return false;
+  if(filters.temos&&it.temos!==filters.temos)return false;
+  if(filters.status&&it.status!==filters.status)return false;
+  if(filters.search){const q=filters.search.toLowerCase();
+    if(!(it.code+' '+it.en+' '+it.pt+' '+it.es+' '+it.owner+' '+it.notes).toLowerCase().includes(q))return false;}
+  return true;
+}
+function renderProcessos(app){
+  const order=langOrder();let any=false;
+  MODULES.forEach(m=>{
+    const items=state.catalog.filter(it=>it.mod===m.id&&passProc(it));if(!items.length)return;any=true;
+    const color=MOD_COLOR[m.id]||'#0083CA',collapsed=!!state.collapsed[m.id];
+    const tot=state.catalog.filter(it=>it.mod===m.id).length;
+    const done=state.catalog.filter(it=>it.mod===m.id&&(it.status==='documentado'||it.status==='validado')).length;
+    const pct=tot?Math.round(done/tot*100):0;
+    const sec=document.createElement('section');sec.className='module'+(collapsed?' collapsed':'');
+    const head=document.createElement('div');head.className='module-head';head.style.background=color;
+    head.innerHTML='<span class="mcode">'+m.id+'</span><h2>'+esc(m[LANG])+'</h2><span class="mcount">'+items.length+' / '+tot+' &middot; '+pct+'%</span><span class="chev">&#9660;</span>';
+    head.addEventListener('click',()=>{state.collapsed[m.id]=!collapsed;persist();render();});
+    const mini=document.createElement('div');mini.className='module-mini';mini.innerHTML='<span style="width:'+pct+'%"></span>';
+    const body=document.createElement('div');body.className='module-body';
+    items.forEach(it=>body.appendChild(buildProcCard(it,color,order)));
+    sec.appendChild(head);sec.appendChild(mini);sec.appendChild(body);app.appendChild(sec);
+  });
+  if(!any){const e=document.createElement('div');e.className='empty';e.textContent=t('empty_proc');app.appendChild(e);}
+}
+function buildProcCard(it,color,order){
+  const card=document.createElement('div');card.className='card'+(it.custom?' custom':'');card.dataset.code=it.code;card.style.borderLeftColor=color;
+  const p=order[0],s1=order[1],s2=order[2];
+  const ncases=state.cases.filter(c=>c.proc===it.code).length;
+  const head=document.createElement('div');head.className='card-head';
+  head.innerHTML='<div class="card-top"><span class="code-badge" style="background:'+color+'">'+esc(it.code)+'</span>'+
+    '<div class="pills"><span class="pill temos-'+it.temos+'" data-role="ptemos">'+esc(temosLabel(it.temos))+'</span>'+
+    '<span class="pill st" data-role="pstatus">'+esc(statusLabel(it.status))+'</span>'+
+    (ncases?'<span class="pill cnt" data-role="pcnt">'+ncases+' '+t('proc_cases')+'</span>':'<span class="pill cnt" data-role="pcnt" style="display:none"></span>')+'</div></div>'+
+    '<div class="name-primary" data-role="nprim">'+esc(it[p])+'</div>'+
+    '<div class="name-sec"><b>'+langTag(s1)+'</b><span data-role="nsec1">'+esc(it[s1])+'</span></div>'+
+    '<div class="name-sec"><b>'+langTag(s2)+'</b><span data-role="nsec2">'+esc(it[s2])+'</span></div>'+
+    (it.owner?'<div class="flag" data-role="fowner">&#9670; '+esc(it.owner)+'</div>':'<div class="flag" data-role="fowner" style="display:none"></div>')+
+    (it.edited?'<div class="edited-tag" data-role="ftag">('+t('edited')+')</div>':'');
+  head.addEventListener('click',()=>card.classList.toggle('open'));
+  const ed=document.createElement('div');ed.className='editor';ed.innerHTML=buildProcEditor(it);
+  wireProcEditor(ed,card,it);
+  card.appendChild(head);card.appendChild(ed);return card;
+}
+function buildProcEditor(it){
+  const so=STATUS_OPTS.map(o=>'<option value="'+o.v+'"'+(o.v===it.status?' selected':'')+'>'+esc(o[LANG])+'</option>').join('');
+  const to=TEMOS_OPTS.map(o=>'<option value="'+o.v+'"'+(o.v===it.temos?' selected':'')+'>'+esc(o[LANG])+'</option>').join('');
+  return '<div class="fld"><label>'+t('l_en')+'</label><input data-f="en" value="'+esc(it.en)+'"></div>'+
+    '<div class="fld"><label>'+t('l_pt')+'</label><input data-f="pt" value="'+esc(it.pt)+'"></div>'+
+    '<div class="fld"><label>'+t('l_es')+'</label><input data-f="es" value="'+esc(it.es)+'"></div>'+
+    '<div class="fld-row"><div class="fld"><label>'+t('l_temos')+'</label><select data-f="temos">'+to+'</select></div>'+
+    '<div class="fld"><label>'+t('l_status')+'</label><select data-f="status">'+so+'</select></div></div>'+
+    '<div class="fld"><label>'+t('l_owner')+'</label><input data-f="owner" value="'+esc(it.owner)+'" placeholder="'+t('ph_owner')+'"></div>'+
+    '<div class="fld"><label>'+t('l_notes')+'</label><textarea data-f="notes" placeholder="'+t('ph_notes')+'">'+esc(it.notes)+'</textarea></div>'+
+    '<div class="editor-actions"><button class="del-btn" data-act="del">'+t('del')+'</button>'+
+    '<div style="display:flex;gap:8px;align-items:center">'+
+    (it.edited&&!it.custom?'<button class="del-btn" data-act="restore" style="color:var(--teal)">'+t('reset_one')+'</button>':'')+
+    '<button class="mini-btn" data-act="track">'+t('track_here')+'</button></div></div>';
+}
+let saveTimer=null;
+function wireProcEditor(ed,card,it){
+  ed.querySelectorAll('[data-f]').forEach(inp=>{
+    const f=inp.dataset.f;
+    const h=()=>{it[f]=inp.value;if(['en','pt','es'].includes(f))it.edited=(it.en!==it.oen||it.pt!==it.opt||it.es!==it.oes);
+      liveProc(card,it);clearTimeout(saveTimer);saveTimer=setTimeout(()=>{persist();buildKPIs();toast(t('saved'));},500);};
+    inp.addEventListener('input',h);inp.addEventListener('change',h);
+  });
+  ed.querySelector('[data-act="del"]').addEventListener('click',e=>{e.stopPropagation();
+    if(confirm(t('del_confirm'))){state.catalog=state.catalog.filter(x=>x!==it);persist();render();toast(t('deleted'));}});
+  const rb=ed.querySelector('[data-act="restore"]');
+  if(rb)rb.addEventListener('click',e=>{e.stopPropagation();it.en=it.oen;it.pt=it.opt;it.es=it.oes;it.edited=false;persist();render();toast(t('reset_done'));});
+  ed.querySelector('[data-act="track"]').addEventListener('click',e=>{e.stopPropagation();openCaseModal(null,{proc:it.code});});
+}
+function liveProc(card,it){
+  const o=langOrder(),q=s=>card.querySelector(s);
+  q('[data-role="nprim"]').textContent=it[o[0]];q('[data-role="nsec1"]').textContent=it[o[1]];q('[data-role="nsec2"]').textContent=it[o[2]];
+  const pt=q('[data-role="ptemos"]');pt.className='pill temos-'+it.temos;pt.textContent=temosLabel(it.temos);
+  q('[data-role="pstatus"]').textContent=statusLabel(it.status);
+  const fo=q('[data-role="fowner"]');if(it.owner){fo.style.display='';fo.innerHTML='&#9670; '+esc(it.owner);}else fo.style.display='none';
+}
+
+/* ===================== CASOS: filtro comum ===================== */
+function passCase(c){
+  if(filters.cstatus){if(filters.cstatus==='atrasado'){if(!isLate(c))return false;}else if(c.status!==filters.cstatus)return false;}
+  if(filters.search){const q=filters.search.toLowerCase();const proc=procByCode(c.proc);
+    const blob=((c.proc||'')+' '+(c.titulo||'')+' '+(c.resp||'')+' '+(c.obs||'')+' '+(proc?proc[LANG]:'')).toLowerCase();
+    if(!blob.includes(q))return false;}
+  return true;
+}
+function caseLabel(c){const proc=procByCode(c.proc);const nm=proc?proc[LANG]:(c.proc||'');return (c.titulo&&c.titulo.trim())?c.titulo:nm;}
+
+/* ===================== TIMELINE ===================== */
+function renderTimeline(app){
+  app.appendChild(monthNav());
+  const dim=new Date(curYear,curMonth+1,0).getDate();
+  const tl=document.createElement('div');tl.className='timeline';
+  for(let d=1;d<=dim;d++){
+    const dateStr=ymd(curYear,curMonth,d);const wd=new Date(curYear,curMonth,d).getDay();
+    const dayCases=state.cases.filter(c=>c.date===dateStr&&passCase(c));
+    const allDone=dayCases.length>0&&dayCases.every(c=>c.status==='concluido');
+    const cell=document.createElement('div');
+    cell.className='day'+(wd===6?' sat':'')+(wd===0?' sun':'')+(dateStr===todayYMD()?' today':'')+(dateStr===selDay?' sel':'')+(dayCases.length?' hasitem':'')+(allDone?' alldone':'');
+    cell.innerHTML='<span class="dn">'+d+'</span>'+(dayCases.length?'<span class="dc">'+dayCases.length+'</span>':'<span class="dc">&nbsp;</span>');
+    cell.addEventListener('click',()=>{selDay=dateStr;render();});
+    cell.addEventListener('dragover',e=>{e.preventDefault();cell.classList.add('dragover');});
+    cell.addEventListener('dragleave',()=>cell.classList.remove('dragover'));
+    cell.addEventListener('drop',e=>{e.preventDefault();cell.classList.remove('dragover');const id=e.dataTransfer.getData('text/id');moveCaseToDate(id,dateStr);});
+    tl.appendChild(cell);
+  }
+  app.appendChild(tl);
+  if(!selDay||parseYMD(selDay).getMonth()!==curMonth||parseYMD(selDay).getFullYear()!==curYear)selDay=ymd(curYear,curMonth,Math.min(new Date().getDate(),dim));
+  const panel=document.createElement('div');panel.className='daypanel';
+  const dsel=parseYMD(selDay);
+  const dcases=state.cases.filter(c=>c.date===selDay&&passCase(c));
+  panel.innerHTML='<h3>'+t('day_of')+' &middot; '+dsel.toLocaleDateString(LANG==='pt'?'pt-BR':LANG==='es'?'es-ES':'en-US',{weekday:'long',day:'2-digit',month:'long'})+
+    '<button class="mini-btn" id="addHere">'+t('add_case_here')+'</button></h3>';
+  if(!dcases.length){const e=document.createElement('div');e.className='empty';e.textContent=t('empty_day');panel.appendChild(e);}
+  dcases.forEach(c=>panel.appendChild(buildCaseRow(c)));
+  app.appendChild(panel);
+  panel.querySelector('#addHere').addEventListener('click',()=>openCaseModal(null,{date:selDay}));
+}
+function buildCaseRow(c){
+  const row=document.createElement('div');row.className='case-row'+(isLate(c)?' late':'');row.draggable=true;row.style.borderLeftColor=caseColor(c);
+  const cs=csObj(c.status);
+  row.innerHTML='<span class="ccode">'+esc(c.proc||t('cm_free'))+'</span><span class="ctit">'+esc(caseLabel(c))+'</span>'+
+    (c.resp?'<span class="cresp">'+esc(c.resp)+'</span>':'')+'<span class="cstat" style="background:'+cs.color+'">'+esc(csLabel(c.status))+'</span>';
+  row.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/id',c.id);row.classList.add('dragging');});
+  row.addEventListener('dragend',()=>row.classList.remove('dragging'));
+  row.addEventListener('dblclick',()=>openCaseModal(c.id));
+  return row;
+}
+
+/* ===================== CALENDARIO ===================== */
+function renderCalendario(app){
+  app.appendChild(monthNav());
+  const leg=document.createElement('div');leg.className='cal-legend';
+  CASE_STATUS.forEach(s=>leg.innerHTML+='<span class="leg-item"><span class="leg-dot" style="background:'+s.color+'"></span>'+esc(s[LANG])+'</span>');
+  PALETTE.filter(p=>p.hex).forEach(p=>leg.innerHTML+='<span class="leg-item"><span class="leg-dot" style="background:'+p.hex+'"></span>'+esc(p.name[LANG])+'</span>');
+  app.appendChild(leg);
+  const grid=document.createElement('div');grid.className='cal-grid';
+  t('dow').forEach(d=>{const h=document.createElement('div');h.className='cal-dow';h.textContent=d;grid.appendChild(h);});
+  const first=new Date(curYear,curMonth,1).getDay(),dim=new Date(curYear,curMonth+1,0).getDate();
+  for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cal-cell empty';grid.appendChild(e);}
+  for(let d=1;d<=dim;d++){
+    const dateStr=ymd(curYear,curMonth,d),wd=new Date(curYear,curMonth,d).getDay();
+    const cell=document.createElement('div');
+    cell.className='cal-cell'+(wd===6?' sat':'')+(wd===0?' sun':'')+(dateStr===todayYMD()?' today':'');
+    cell.innerHTML='<span class="cal-daynum">'+d+'</span>';
+    state.cases.filter(c=>c.date===dateStr&&passCase(c)).forEach(c=>cell.appendChild(buildChip(c)));
+    const add=document.createElement('div');add.className='cal-add';add.textContent='+';
+    add.addEventListener('click',()=>openCaseModal(null,{date:dateStr}));cell.appendChild(add);
+    cell.addEventListener('dragover',e=>{e.preventDefault();cell.classList.add('dragover');});
+    cell.addEventListener('dragleave',()=>cell.classList.remove('dragover'));
+    cell.addEventListener('drop',e=>{e.preventDefault();cell.classList.remove('dragover');const id=e.dataTransfer.getData('text/id');moveCaseToDate(id,dateStr);});
+    grid.appendChild(cell);
+  }
+  app.appendChild(grid);
+}
+function buildChip(c){
+  const hex=caseColor(c);const chip=document.createElement('div');
+  chip.className='chip'+(isLightColor(hex)?' light':'');chip.style.background=hex;chip.draggable=true;
+  chip.innerHTML='<span class="chdot" style="background:'+hex+'"></span><span class="chtxt">'+esc((c.proc?c.proc+' · ':'')+caseLabel(c))+'</span>';
+  chip.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/id',c.id);chip.classList.add('dragging');});
+  chip.addEventListener('dragend',()=>chip.classList.remove('dragging'));
+  chip.addEventListener('dblclick',()=>openCaseModal(c.id));
+  chip.querySelector('.chdot').addEventListener('click',ev=>{ev.stopPropagation();cycleColor(c);});
+  return chip;
+}
+function cycleColor(c){const idx=PALETTE.findIndex(p=>p.v===(c.cor||''));c.cor=PALETTE[(idx+1)%PALETTE.length].v;persist();render();}
+
+/* ===================== KANBAN ===================== */
+function renderKanban(app){
+  const grid=document.createElement('div');grid.className='kb-grid';
+  CASE_STATUS.forEach(s=>{
+    const col=document.createElement('div');col.className='kb-col';col.dataset.status=s.v;
+    col.innerHTML='<h3 style="border-bottom-color:'+s.color+';color:'+s.color+'">'+esc(s[LANG])+'<span class="kcount">'+state.cases.filter(c=>c.status===s.v&&passCase(c)).length+'</span></h3>';
+    state.cases.filter(c=>c.status===s.v&&passCase(c)).forEach(c=>col.appendChild(buildKbCard(c)));
+    col.addEventListener('dragover',e=>{e.preventDefault();col.classList.add('dragover');});
+    col.addEventListener('dragleave',()=>col.classList.remove('dragover'));
+    col.addEventListener('drop',e=>{e.preventDefault();col.classList.remove('dragover');const id=e.dataTransfer.getData('text/id');setCaseStatus(id,s.v);});
+    grid.appendChild(col);
+  });
+  app.appendChild(grid);
+  if(!state.cases.length){const e=document.createElement('div');e.className='empty';e.textContent=t('empty_cases');app.appendChild(e);}
+}
+function buildKbCard(c){
+  const card=document.createElement('div');card.className='kb-card'+(isLate(c)?' late':'');card.draggable=true;card.style.borderLeftColor=caseColor(c);
+  const dd=parseYMD(c.date);
+  card.innerHTML='<span class="kcode">'+esc(c.proc||t('cm_free'))+'</span><div class="ktit">'+esc(caseLabel(c))+'</div>'+
+    '<div class="kmeta"><span>'+(dd?dd.toLocaleDateString(LANG==='pt'?'pt-BR':LANG==='es'?'es-ES':'en-US',{day:'2-digit',month:'2-digit'}):'')+(c.dateFim?' → '+parseYMD(c.dateFim).toLocaleDateString(LANG==='pt'?'pt-BR':LANG==='es'?'es-ES':'en-US',{day:'2-digit',month:'2-digit'}):'')+'</span><span>'+esc(c.resp||'')+'</span></div>';
+  card.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/id',c.id);card.classList.add('dragging');});
+  card.addEventListener('dragend',()=>card.classList.remove('dragging'));
+  card.addEventListener('dblclick',()=>openCaseModal(c.id));
+  return card;
+}
+
+/* ===================== GANTT ===================== */
+function renderGantt(app){
+  app.appendChild(monthNav());
+  const dim=new Date(curYear,curMonth+1,0).getDate();
+  const cases=state.cases.filter(passCase).filter(c=>{
+    const s=parseYMD(c.date),e=parseYMD(c.dateFim||c.date);if(!s)return false;
+    const mS=new Date(curYear,curMonth,1),mE=new Date(curYear,curMonth,dim);return e>=mS&&s<=mE;
+  }).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const wrap=document.createElement('div');wrap.className='gantt-wrap';
+  if(!cases.length){wrap.innerHTML='<div class="empty">'+t('empty_cases')+'</div>';app.appendChild(wrap);return;}
+  let html='<table class="gantt"><thead><tr><th class="glabel">'+esc(monthLabel(curYear,curMonth))+'</th>';
+  for(let d=1;d<=dim;d++){const wd=new Date(curYear,curMonth,d).getDay();html+='<th class="'+(wd===0||wd===6?'wknd':'')+'">'+d+'</th>';}
+  html+='</tr></thead><tbody>';
+  cases.forEach(c=>{
+    const s=parseYMD(c.date),e=parseYMD(c.dateFim||c.date);
+    const sd=(s.getMonth()===curMonth&&s.getFullYear()===curYear)?s.getDate():1;
+    const ed=(e.getMonth()===curMonth&&e.getFullYear()===curYear)?e.getDate():dim;
+    html+='<tr><td class="glabel"><span class="gproc">'+esc(c.proc||'')+'</span> <span class="gtit">'+esc(caseLabel(c))+'</span></td>';
+    for(let d=1;d<=dim;d++){
+      const wd=new Date(curYear,curMonth,d).getDay();const isToday=ymd(curYear,curMonth,d)===todayYMD();
+      const inBar=d>=sd&&d<=ed;
+      html+='<td class="gcell'+(wd===0||wd===6?' wknd':'')+(isToday?' today':'')+'">'+(inBar?'<div class="gbar" data-id="'+c.id+'" style="background:'+caseColor(c)+'"></div>':'')+'</td>';
+    }
+    html+='</tr>';
+  });
+  html+='</tbody></table>';
+  wrap.innerHTML=html;app.appendChild(wrap);
+  wrap.querySelectorAll('.gbar').forEach(b=>b.addEventListener('click',()=>openCaseModal(b.dataset.id)));
+}
+
+/* ===================== MONTH NAV ===================== */
+function monthNav(){
+  const nav=document.createElement('div');nav.className='month-nav';
+  nav.innerHTML='<button id="mPrev">&#8249;</button><span class="mlabel">'+esc(monthLabel(curYear,curMonth))+'</span><button id="mNext">&#8250;</button>';
+  nav.querySelector('#mPrev').addEventListener('click',()=>{curMonth--;if(curMonth<0){curMonth=11;curYear--;}render();});
+  nav.querySelector('#mNext').addEventListener('click',()=>{curMonth++;if(curMonth>11){curMonth=0;curYear++;}render();});
+  return nav;
+}
+
+/* ===================== CASE MODAL ===================== */
+function openCaseModal(id,preset){
+  editingCaseId=id;
+  const isNew=!id;let c;
+  if(isNew){c={id:uid(),proc:(preset&&preset.proc)||'',titulo:'',date:(preset&&preset.date)||todayYMD(),dateFim:'',status:'pendente',resp:'',obs:'',cor:''};}
+  else{c=state.cases.find(x=>x.id===id);if(!c)return;}
+  document.getElementById('caseModalTitle').textContent=isNew?t('cm_new'):t('cm_edit');
+  const sel=document.getElementById('cmProc');
+  sel.innerHTML='<option value="">'+t('cm_free')+'</option>'+
+    MODULES.map(m=>'<optgroup label="'+m.id+' · '+esc(m[LANG])+'">'+
+      state.catalog.filter(p=>p.mod===m.id).map(p=>'<option value="'+p.code+'"'+(p.code===c.proc?' selected':'')+'>'+p.code+' · '+esc(p[LANG])+'</option>').join('')+'</optgroup>').join('');
+  document.getElementById('cmTit').value=c.titulo||'';
+  document.getElementById('cmDate').value=c.date||'';
+  document.getElementById('cmDateFim').value=c.dateFim||'';
+  document.getElementById('cmStatus').innerHTML=CASE_STATUS.map(s=>'<option value="'+s.v+'"'+(s.v===c.status?' selected':'')+'>'+esc(s[LANG])+'</option>').join('');
+  document.getElementById('cmResp').value=c.resp||'';
+  document.getElementById('cmObs').value=c.obs||'';
+  editingColor=c.cor||'';buildSwatches();
+  document.getElementById('cmDel').style.display=isNew?'none':'inline';
+  document.getElementById('caseModalBg').classList.add('show');
+  document.getElementById('caseModalBg')._draft=c;document.getElementById('caseModalBg')._isNew=isNew;
+}
+function buildSwatches(){
+  const wrap=document.getElementById('cmSwatches');wrap.innerHTML='';
+  PALETTE.forEach(p=>{
+    const sw=document.createElement('div');
+    if(!p.hex){sw.className='sw none'+(editingColor===''?' sel':'');sw.textContent='auto';}
+    else{sw.className='sw'+(editingColor===p.v?' sel':'');sw.style.background=p.hex;}
+    sw.title=p.name[LANG];sw.addEventListener('click',()=>{editingColor=p.v;buildSwatches();});
+    wrap.appendChild(sw);
+  });
+}
+function saveCaseModal(){
+  const bg=document.getElementById('caseModalBg');const c=bg._draft,isNew=bg._isNew;
+  c.proc=document.getElementById('cmProc').value;
+  c.titulo=document.getElementById('cmTit').value.trim();
+  c.date=document.getElementById('cmDate').value||todayYMD();
+  c.dateFim=document.getElementById('cmDateFim').value||'';
+  c.status=document.getElementById('cmStatus').value;
+  c.resp=document.getElementById('cmResp').value.trim();
+  c.obs=document.getElementById('cmObs').value.trim();
+  c.cor=editingColor;
+  if(!c.titulo&&!c.proc)c.titulo=t('new_case');
+  if(isNew)state.cases.unshift(c);
+  persist();closeCaseModal();
+  if(VIEW==='processos')VIEW='timeline';
+  if(c.date){const d=parseYMD(c.date);curYear=d.getFullYear();curMonth=d.getMonth();selDay=c.date;}
+  render();toast(isNew?t('added_case'):t('saved'));
+}
+function deleteCase(){const bg=document.getElementById('caseModalBg');const c=bg._draft;
+  if(confirm(t('del_confirm'))){state.cases=state.cases.filter(x=>x.id!==c.id);persist();closeCaseModal();render();toast(t('deleted'));}}
+function closeCaseModal(){document.getElementById('caseModalBg').classList.remove('show');editingCaseId=null;}
+
+/* ===================== MOVES ===================== */
+function moveCaseToDate(id,dateStr){const c=state.cases.find(x=>x.id===id);if(!c||c.date===dateStr)return;
+  const from=c.date;c.date=dateStr;
+  if(c.dateFim&&parseYMD(c.dateFim)<parseYMD(dateStr))c.dateFim='';
+  c.obs=((c.obs||'')+(c.obs?' ':'')+'['+from+'→'+dateStr+']').trim();
+  persist();render();toast(t('saved'));}
+function setCaseStatus(id,st){const c=state.cases.find(x=>x.id===id);if(!c||c.status===st)return;c.status=st;persist();render();toast(t('saved'));}
+
+/* ===================== BULK ===================== */
+let bulkSel=new Set();
+function openBulk(){
+  bulkSel=new Set();
+  const dest=document.getElementById('bulkDest');
+  const dim=new Date(curYear,curMonth+1,0).getDate();let opts='';
+  for(let d=1;d<=dim;d++){const ds=ymd(curYear,curMonth,d);const wd=new Date(curYear,curMonth,d).getDay();
+    opts+='<option value="'+ds+'"'+(ds===todayYMD()?' selected':'')+'>'+d+' ('+t('dow')[wd]+')'+(ds===todayYMD()?' •':'')+'</option>';}
+  dest.innerHTML=opts;
+  const fl=document.getElementById('bulkFilter');
+  fl.innerHTML='<option value="">'+t('f_all_cstatus')+'</option>'+CASE_STATUS.map(s=>'<option value="'+s.v+'">'+esc(s[LANG])+'</option>').join('')+'<option value="atrasado">'+esc(t('c_late'))+'</option>';
+  renderBulkList();document.getElementById('bulkModalBg').classList.add('show');
+}
+function renderBulkList(){
+  const fl=document.getElementById('bulkFilter').value;const list=document.getElementById('bulkList');list.innerHTML='';
+  const byDay={};
+  state.cases.filter(c=>{if(!fl)return true;if(fl==='atrasado')return isLate(c);return c.status===fl;})
+    .forEach(c=>{(byDay[c.date]=byDay[c.date]||[]).push(c);});
+  const days=Object.keys(byDay).sort();
+  if(!days.length){list.innerHTML='<div class="empty" style="padding:16px">'+t('empty_cases')+'</div>';return;}
+  days.forEach(day=>{
+    const dl=document.createElement('div');dl.className='bulk-day';const dd=parseYMD(day);
+    dl.textContent=dd.toLocaleDateString(LANG==='pt'?'pt-BR':LANG==='es'?'es-ES':'en-US',{weekday:'short',day:'2-digit',month:'2-digit'});list.appendChild(dl);
+    byDay[day].forEach(c=>{
+      const row=document.createElement('label');row.className='bulk-item';
+      row.innerHTML='<input type="checkbox" data-id="'+c.id+'"'+(bulkSel.has(c.id)?' checked':'')+'><span>'+esc((c.proc?c.proc+' · ':'')+caseLabel(c))+'</span>';
+      row.querySelector('input').addEventListener('change',e=>{if(e.target.checked)bulkSel.add(c.id);else bulkSel.delete(c.id);});
+      list.appendChild(row);
+    });
+  });
+}
+function bulkSelectVisible(){document.querySelectorAll('#bulkList input[type=checkbox]').forEach(cb=>{cb.checked=true;bulkSel.add(cb.dataset.id);});}
+function bulkClearSel(){bulkSel=new Set();document.querySelectorAll('#bulkList input[type=checkbox]').forEach(cb=>cb.checked=false);}
+function bulkMove(){
+  if(!bulkSel.size){toast(t('bulk_none'));return;}
+  const dest=document.getElementById('bulkDest').value;let n=0;
+  state.cases.forEach(c=>{if(bulkSel.has(c.id)&&c.date!==dest){const from=c.date;c.date=dest;
+    if(c.dateFim&&parseYMD(c.dateFim)<parseYMD(dest))c.dateFim='';
+    c.obs=((c.obs||'')+(c.obs?' ':'')+'[lote '+from+'→'+dest+']').trim();n++;}});
+  persist();document.getElementById('bulkModalBg').classList.remove('show');
+  const d=parseYMD(dest);curYear=d.getFullYear();curMonth=d.getMonth();selDay=dest;render();toast(n+' '+t('moved'));
+}
+
+/* ===================== CONFETTI ===================== */
+function checkAllDone(){
+  const total=state.cases.length,done=state.cases.filter(c=>c.status==='concluido').length;
+  const all=total>0&&done===total;
+  if(all&&!allDoneFlag){fireConfetti();toast(t('all_done'));}
+  allDoneFlag=all;
+}
+function fireConfetti(){
+  const cont=document.getElementById('confetti');cont.style.display='block';cont.innerHTML='';
+  const cols=['#0083CA','#003C64','#005A64','#6EB4DC','#7D0041','#8C321E','#2E7D32'];
+  for(let i=0;i<120;i++){const c=document.createElement('div');c.className='conf';
+    c.style.left=Math.random()*100+'vw';c.style.background=cols[i%cols.length];
+    c.style.animationDuration=(2.5+Math.random()*2)+'s';c.style.animationDelay=(Math.random()*0.6)+'s';cont.appendChild(c);}
+  setTimeout(()=>{cont.style.display='none';cont.innerHTML='';},5200);
+}
+
+/* ===================== EXPORTS ===================== */
+function exportExcel(){
+  const fname='Cockpit_AskHR_Linhatempo_Sonova_'+stamp()+'.xlsx';
+  const procRows=[['Código','Módulo','English','Português','Español','Temos','Status','Responsável/SME','Observações']];
+  MODULES.forEach(m=>state.catalog.filter(i=>i.mod===m.id).forEach(it=>procRows.push([it.code,m.id+' - '+m.pt,it.en,it.pt,it.es,temosPt(it.temos),statusPt(it.status),it.owner,it.notes])));
+  const caseRows=[['Processo','Título','Data início','Prazo fim','Status','Responsável','Cor','Observações']];
+  state.cases.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(c=>{
+    const proc=procByCode(c.proc);caseRows.push([c.proc||'(livre)',(c.titulo||(proc?proc.pt:'')),c.date||'',c.dateFim||'',csPt(c.status),c.resp||'',palPt(c.cor),c.obs||'']);});
+  if(typeof XLSX==='undefined'){exportCSV(procRows,fname.replace('.xlsx','_processos.csv'));exportCSV(caseRows,fname.replace('.xlsx','_casos.csv'));toast(t('xlsx_fail'));return;}
+  const wb=XLSX.utils.book_new();
+  addStyledSheet(wb,'Processos',procRows,[13,30,42,42,42,9,14,20,48]);
+  addStyledSheet(wb,'Casos',caseRows,[16,42,13,13,14,20,13,48]);
+  XLSX.writeFile(wb,fname);
+}
+function addStyledSheet(wb,name,rows,widths){
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=widths.map(w=>({wch:w}));ws['!rows']=[{hpt:22}];
+  const rg=XLSX.utils.decode_range(ws['!ref']);
+  for(let R=rg.s.r;R<=rg.e.r;R++)for(let C=rg.s.c;C<=rg.e.c;C++){
+    const ref=XLSX.utils.encode_cell({r:R,c:C});if(!ws[ref])continue;const head=R===0;
+    ws[ref].s={font:{name:'Calibri Light',sz:8,bold:head,color:{rgb:head?'FFFFFF':'333333'}},
+      fill:head?{fgColor:{rgb:'0083CA'}}:{fgColor:{rgb:'FFFFFF'}},
+      alignment:{vertical:'top',horizontal:'left',wrapText:true},
+      border:{top:{style:'thin',color:{rgb:'CCCCCC'}},bottom:{style:'thin',color:{rgb:'CCCCCC'}},left:{style:'thin',color:{rgb:'CCCCCC'}},right:{style:'thin',color:{rgb:'CCCCCC'}}}};
+  }
+  XLSX.utils.book_append_sheet(wb,ws,name);
+}
+function temosPt(v){return v==='sim'?'Sim':v==='parcial'?'Parcial':'Não';}
+function statusPt(v){const o=STATUS_OPTS.find(x=>x.v===v);return o?o.pt:v;}
+function csPt(v){const o=CASE_STATUS.find(x=>x.v===v);return o?o.pt:v;}
+function palPt(v){const p=palByV(v);return p.hex?p.name.pt:'Auto';}
+function exportCSV(rows,fname){const csv=rows.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(';')).join('\r\n');download('\ufeff'+csv,fname,'text/csv;charset=utf-8;');}
+function exportJSON(){download(JSON.stringify(state,null,2),'backup_cockpit_askhr_lt_'+stamp()+'.json','application/json');}
+function download(content,fname,mime){const b=new Blob([content],{type:mime});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);}
+function stamp(){const d=new Date();return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes());}
+
+/* ===================== ADD / IMPORT / RESET ===================== */
+function addProcess(){const modId=filters.mod||'HR-190';
+  const it={code:t('new_code'),mod:modId,en:t('new_name'),pt:t('new_name'),es:t('new_name'),temos:'nao',status:'nao_mapeado',owner:'',notes:'',custom:true,edited:false,oen:t('new_name'),opt:t('new_name'),oes:t('new_name')};
+  state.catalog.push(it);persist();render();toast(t('added_proc'));
+  const card=document.querySelector('.card[data-code="'+CSS.escape(it.code)+'"]');if(card){card.classList.add('open');card.scrollIntoView({behavior:'smooth',block:'center'});}}
+/* --- Conversao do backup linhatempo (Gerenciador RH - PMO Sonova) --- */
+const LT_COR={azul:'blue',escuro:'navy',petroleo:'teal',claro:'light',bordo:'wine','bordô':'wine',terracota:'rust',
+  blue:'blue',navy:'navy',teal:'teal',light:'light',wine:'wine',rust:'rust'};
+function ltStatus(s){s=String(s||'').toLowerCase();if(s.indexOf('conclu')===0||s.indexOf('conclu')>-1&&s.indexOf('nao')<0)return 'concluido';if(s.indexOf('andam')>-1||s.indexOf('progres')>-1||s.indexOf('curso')>-1)return 'andamento';return 'pendente';}
+function ltCollapse(s){return String(s||'').replace(/\s*\n+\s*/g,' · ').replace(/\s{2,}/g,' ').trim();}
+function ltObs(a,extra){const p=[];if(a.obs)p.push(String(a.obs).trim());
+  if(a.prioridade&&a.prioridade!=='Média'&&a.prioridade!=='Media')p.push('Prioridade: '+a.prioridade);
+  if(a.depende)p.push('Depende: '+a.depende);if(extra)p.push(extra);return p.join(' · ');}
+function isYMD(s){return /^\d{4}-\d{2}-\d{2}$/.test(String(s||''));}
+function convertLinhatempo(p){
+  const out=[];
+  const ad=p.activityData||{};
+  Object.keys(ad).forEach(dayKey=>{(Array.isArray(ad[dayKey])?ad[dayKey]:[]).forEach(a=>{
+    let date=a.inicio||'';
+    if(!isYMD(date)){const dnum=parseInt(dayKey,10);if(dnum)date=ymd(curYear,curMonth,dnum);else return;}
+    const fim=(a.fim&&a.fim!==a.inicio&&isYMD(a.fim))?a.fim:'';
+    out.push({id:a.id||uid(),proc:'',titulo:ltCollapse(a.text)||t('new_case'),date:date,dateFim:fim,
+      status:ltStatus(a.status),resp:String(a.responsavel||'').trim(),obs:ltObs(a,''),cor:LT_COR[String(a.cor||'').toLowerCase()]||''});
+  });});
+  (Array.isArray(p.calendarioDireto)?p.calendarioDireto:[]).forEach(a=>{
+    let date='';
+    if(a.startYear!=null&&a.startMonth!=null&&a.day!=null)date=ymd(+a.startYear,+a.startMonth,+a.day);
+    else if(isYMD(a.date))date=a.date;
+    if(!isYMD(date))return;
+    out.push({id:a.id||uid(),proc:'',titulo:ltCollapse(a.text)||t('new_case'),date:date,dateFim:'',
+      status:ltStatus(a.status),resp:String(a.responsavel||'').trim(),obs:ltObs(a,a.recorrenteMensal?'Recorrente mensal':''),cor:LT_COR[String(a.cor||'').toLowerCase()]||''});
+  });
+  return out;
+}
+function mergeCases(nc){const byId={};state.cases.forEach(c=>byId[c.id]=c);let added=0,updated=0;
+  nc.forEach(n=>{if(byId[n.id]){Object.assign(byId[n.id],n);updated++;}else{state.cases.push(n);byId[n.id]=n;added++;}});return{added,updated};}
+function jumpToBusiestMonth(){const cnt={};state.cases.forEach(c=>{const d=parseYMD(c.date);if(d){const k=d.getFullYear()+'|'+d.getMonth();cnt[k]=(cnt[k]||0)+1;}});
+  let best=null,bn=-1;Object.keys(cnt).forEach(k=>{if(cnt[k]>bn){bn=cnt[k];best=k;}});
+  if(best){const pr=best.split('|');curYear=+pr[0];curMonth=+pr[1];selDay=ymd(curYear,curMonth,1);}}
+
+function importJSON(file){
+  const rd=new FileReader();
+  rd.onload=()=>{
+    let p;
+    try{p=JSON.parse(rd.result);}catch(e){toast(t('bad_file')+' (JSON)');return;}
+    try{
+      if(p&&Array.isArray(p.catalog)){
+        state={catalog:p.catalog,cases:Array.isArray(p.cases)?p.cases:[],collapsed:p.collapsed||{}};
+        state.cases.forEach(c=>{if(!c.id)c.id=uid();});
+        allDoneFlag=(state.cases.length>0&&state.cases.every(c=>c.status==='concluido'));
+        persist();render();toast(t('imported'));
+      }else if(p&&(p.activityData||p.calendarioDireto)){
+        const conv=convertLinhatempo(p);const res=mergeCases(conv);
+        allDoneFlag=(state.cases.length>0&&state.cases.every(c=>c.status==='concluido'));
+        jumpToBusiestMonth();VIEW='calendario';
+        persist();render();
+        toast(t('imported')+' · '+res.added+' '+String(t('c_total')).toLowerCase()+(res.updated?(' ('+res.updated+' '+t('edited')+')'):''));
+      }else if(p&&Array.isArray(p.items)){
+        state.catalog=p.items;state.collapsed=p.collapsed||{};persist();render();toast(t('imported'));
+      }else{toast(t('bad_file'));}
+    }catch(e){toast(t('bad_file')+' · '+(e&&e.message?e.message:''));}
+  };
+  rd.readAsText(file);
+}
+function resetDefault(){if(confirm(t('reset_confirm'))){state={catalog:SEED.map(seedToItem),cases:[],collapsed:{}};allDoneFlag=false;persist();render();toast(t('reset_done'));}}
+
+/* ===================== CHROME / i18n ===================== */
+function applyChrome(){
+  document.documentElement.lang=LANG==='pt'?'pt-BR':LANG;
+  document.querySelectorAll('[data-i]').forEach(el=>el.textContent=t(el.dataset.i));
+  document.getElementById('search').placeholder=VIEW==='processos'?t('ph_search_proc'):t('ph_search_case');
+  buildFilterSelects();
+  document.querySelectorAll('#langSwitch button').forEach(b=>b.classList.toggle('active',b.dataset.lang===LANG));
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b.dataset.view===VIEW));
+  document.getElementById('footStamp').textContent=new Date().toLocaleString(LANG==='pt'?'pt-BR':LANG==='es'?'es-ES':'en-US');
+  // modal labels
+  const M=[['lb_proc','lb_proc'],['lb_tit','lb_tit'],['lb_date','lb_date'],['lb_datefim','lb_datefim'],['lb_cstat','lb_cstat'],['lb_resp','lb_resp'],['lb_obs','lb_obs'],['lb_cor','lb_cor']];
+  M.forEach(([id,k])=>{const e=document.getElementById(id);if(e)e.textContent=t(k);});
+  document.getElementById('cmSave').textContent=t('cm_save');document.getElementById('cmCancel').textContent=t('cm_cancel');document.getElementById('cmDel').textContent=t('cm_del');
+  document.getElementById('bulkTitle').textContent=t('bulk_title');document.getElementById('lb_bulk_dest').textContent=t('lb_bulk_dest');
+  document.getElementById('lb_bulk_filter').textContent=t('lb_bulk_filter');document.getElementById('bulkSelVis').textContent=t('bulk_selvis');
+  document.getElementById('bulkClear').textContent=t('bulk_clear');document.getElementById('bulkMove').textContent=t('bulk_move');document.getElementById('bulkCancel').textContent=t('bulk_cancel');
+}
+function buildFilterSelects(){
+  const fm=document.getElementById('fModule');
+  fm.innerHTML='<option value="">'+t('f_all_mod')+'</option>'+MODULES.map(m=>'<option value="'+m.id+'"'+(filters.mod===m.id?' selected':'')+'>'+m.id+' · '+esc(m[LANG])+'</option>').join('');
+  const ft=document.getElementById('fTemos');
+  ft.innerHTML='<option value="">'+t('f_all_temos')+'</option>'+TEMOS_OPTS.map(o=>'<option value="'+o.v+'"'+(filters.temos===o.v?' selected':'')+'>'+esc(o[LANG])+'</option>').join('');
+  const fs=document.getElementById('fStatus');
+  fs.innerHTML='<option value="">'+t('f_all_status')+'</option>'+STATUS_OPTS.map(o=>'<option value="'+o.v+'"'+(filters.status===o.v?' selected':'')+'>'+esc(o[LANG])+'</option>').join('');
+  const fc=document.getElementById('fCaseStatus');
+  fc.innerHTML='<option value="">'+t('f_all_cstatus')+'</option>'+CASE_STATUS.map(o=>'<option value="'+o.v+'"'+(filters.cstatus===o.v?' selected':'')+'>'+esc(o[LANG])+'</option>').join('')+'<option value="atrasado"'+(filters.cstatus==='atrasado'?' selected':'')+'>'+esc(t('c_late'))+'</option>';
+}
+function syncFilterSelects(){document.getElementById('fTemos').value=filters.temos;document.getElementById('fStatus').value=filters.status;}
+
+/* ===================== EVENTOS ===================== */
+function bind(){
+  document.querySelectorAll('#langSwitch button').forEach(b=>b.addEventListener('click',()=>{LANG=b.dataset.lang;render();}));
+  document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>{VIEW=b.dataset.view;filters.search='';document.getElementById('search').value='';render();}));
+  document.getElementById('search').addEventListener('input',e=>{filters.search=e.target.value.trim();render();});
+  document.getElementById('fModule').addEventListener('change',e=>{filters.mod=e.target.value;render();});
+  document.getElementById('fTemos').addEventListener('change',e=>{filters.temos=e.target.value;render();});
+  document.getElementById('fStatus').addEventListener('change',e=>{filters.status=e.target.value;render();});
+  document.getElementById('fCaseStatus').addEventListener('change',e=>{filters.cstatus=e.target.value;render();});
+  document.getElementById('addProcBtn').addEventListener('click',addProcess);
+  document.getElementById('addCaseBtn').addEventListener('click',()=>openCaseModal(null,{}));
+  document.getElementById('bulkBtn').addEventListener('click',openBulk);
+  document.getElementById('expandAll').addEventListener('click',()=>{MODULES.forEach(m=>state.collapsed[m.id]=false);persist();render();});
+  document.getElementById('collapseAll').addEventListener('click',()=>{MODULES.forEach(m=>state.collapsed[m.id]=true);persist();render();});
+  document.getElementById('xlsxBtn').addEventListener('click',exportExcel);
+  document.getElementById('jsonBtn').addEventListener('click',exportJSON);
+  document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('fileInput').click());
+  document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files[0])importJSON(e.target.files[0]);e.target.value='';});
+  document.getElementById('printBtn').addEventListener('click',()=>window.print());
+  document.getElementById('resetBtn').addEventListener('click',resetDefault);
+  // case modal
+  document.getElementById('cmSave').addEventListener('click',saveCaseModal);
+  document.getElementById('cmCancel').addEventListener('click',closeCaseModal);
+  document.getElementById('caseModalX').addEventListener('click',closeCaseModal);
+  document.getElementById('cmDel').addEventListener('click',deleteCase);
+  document.getElementById('caseModalBg').addEventListener('click',e=>{if(e.target.id==='caseModalBg')closeCaseModal();});
+  // bulk modal
+  document.getElementById('bulkFilter').addEventListener('change',renderBulkList);
+  document.getElementById('bulkSelVis').addEventListener('click',bulkSelectVisible);
+  document.getElementById('bulkClear').addEventListener('click',bulkClearSel);
+  document.getElementById('bulkMove').addEventListener('click',bulkMove);
+  document.getElementById('bulkCancel').addEventListener('click',()=>document.getElementById('bulkModalBg').classList.remove('show'));
+  document.getElementById('bulkX').addEventListener('click',()=>document.getElementById('bulkModalBg').classList.remove('show'));
+  document.getElementById('bulkModalBg').addEventListener('click',e=>{if(e.target.id==='bulkModalBg')e.currentTarget.classList.remove('show');});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCaseModal();document.getElementById('bulkModalBg').classList.remove('show');}});
+}
+
+/* ===================== INIT ===================== */
+(function init(){
+  const now=new Date();curYear=now.getFullYear();curMonth=now.getMonth();selDay=todayYMD();
+  loadState();allDoneFlag=(state.cases.length>0&&state.cases.every(c=>c.status==='concluido'));
+  bind();render();
+})();
+</script>
+</body>
+</html>
