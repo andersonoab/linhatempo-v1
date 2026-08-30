@@ -127,6 +127,8 @@
   .month-nav .period-btn{width:auto;height:34px;border-radius:17px;padding:0 15px;font-family:'Roboto';
     font-size:12.5px;font-weight:500;border:1px solid var(--blue);background:#fff;color:var(--blue);letter-spacing:.3px;cursor:pointer}
   .month-nav .period-btn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .month-nav .period-btn.migrate{background:var(--blue);color:#fff}
+  .month-nav .period-btn.migrate:hover{background:var(--navy);border-color:var(--navy)}
   .month-nav .period-active{font-family:'Roboto';font-size:12px;font-weight:500;color:var(--done);
     background:#E3F1E4;border:1px solid #BFE3C2;border-radius:17px;padding:6px 13px;letter-spacing:.3px;white-space:nowrap;cursor:default}
 
@@ -156,6 +158,8 @@
   .case-row .ctit{flex:1;font-size:13px;color:var(--text);min-width:0;overflow-wrap:anywhere}
   .case-row .cresp{font-size:11.5px;color:var(--text2)}
   .case-row .cstat{font-size:10px;padding:2px 9px;border-radius:11px;white-space:nowrap;color:#fff}
+  .case-row .recor-mark{font-size:10px;font-weight:500;color:var(--teal);background:#E1EEEF;border:1px solid #BFD9DB;
+    padding:2px 8px;border-radius:11px;white-space:nowrap;flex:none;letter-spacing:.2px}
   /* linha inteira verde quando o caso esta concluido */
   .case-row.done{background:#EAF6EC;border-color:var(--done);border-left-color:var(--done)!important}
   .case-row.done .ctit{color:var(--done-dk);text-decoration:line-through;text-decoration-color:var(--done)}
@@ -527,6 +531,9 @@ const I18N={
     assume_confirm_zero:'Assumir {m} como mês ativo?\n\nNão há tarefas recorrentes concluídas para reabrir.',
     assume_done:'{m} assumido · {n} recorrente(s) reaberta(s)',assume_done_zero:'{m} assumido como mês ativo',
     rollover_toast:'Novo mês aberto · {m} · {n} recorrente(s) reaberta(s)',
+    migrate_btn:'Migrar {n} p/ ativo',migrate_tip:'Mover todas as atividades de data única deste mês para o mês ativo (mesmo dia, concluídos voltam a pendente).',
+    migrate_confirm:'Migrar (mover) {n} atividade(s) de {src} para o mês ativo {dst}?\n\n• Vão para o mesmo dia no mês ativo (mantendo a duração).\n• Concluídos voltam para pendente (novo ciclo).\n• Recorrentes não são afetadas.\n\nDica: faça um "Backup JSON" antes se quiser guardar {src}.',
+    migrate_done:'{n} atividade(s) migrada(s) para {dst}',migrate_none:'Nenhuma atividade de data única em {src} para migrar.',migrate_same:'Você já está no mês ativo.',
     new_code:'HR-000-000',new_name:'Novo processo',new_case:'Novo caso',btn_add_mod:'+ Módulo',mod_edit:'Editar módulo',add_proc_here:'+ Proc',empty_module:'Módulo sem processos. Use "+ Proc" nesta barra para adicionar.',new_module:'Novo módulo',added_mod:'Módulo criado',code_taken:'Código já existe.',lb_mcode:'Código do módulo',lb_mpt:'Nome (PT)',lb_men:'Nome (EN)',lb_mes:'Nome (ES)',lb_mcor:'Cor do módulo',mm_save:'Salvar',mm_cancel:'Cancelar',mod_del:'Excluir módulo',mod_del_empty:'Excluir este módulo?',mod_del_full:'Este módulo tem {N} processo(s). Eles serão movidos para "{M}". Continuar?',mod_del_last:'Não é possível excluir o único módulo.'
   },
   en:{title:'AskHR Cockpit + Timeline',subtitle:'Sonova Brazil · Knowledge Capture · Daily tracking',
@@ -561,6 +568,9 @@ const I18N={
     assume_confirm_zero:'Set {m} as the active month?\n\nThere are no completed recurring tasks to reopen.',
     assume_done:'{m} set active · {n} recurring reopened',assume_done_zero:'{m} set as active month',
     rollover_toast:'New month opened · {m} · {n} recurring reopened',
+    migrate_btn:'Migrate {n} to active',migrate_tip:'Move all single-date activities from this month to the active month (same day, done reset to pending).',
+    migrate_confirm:'Migrate (move) {n} activity(ies) from {src} to the active month {dst}?\n\n• They go to the same day in the active month (keeping duration).\n• Done items reset to pending (new cycle).\n• Recurring tasks are not affected.\n\nTip: run a "Backup JSON" first if you want to keep {src}.',
+    migrate_done:'{n} activity(ies) migrated to {dst}',migrate_none:'No single-date activity in {src} to migrate.',migrate_same:'You are already on the active month.',
     new_code:'HR-000-000',new_name:'New process',new_case:'New case',btn_add_mod:'+ Module',mod_edit:'Edit module',add_proc_here:'+ Proc',empty_module:'Module has no processes. Use "+ Proc" on this bar to add.',new_module:'New module',added_mod:'Module created',code_taken:'Code already exists.',lb_mcode:'Module code',lb_mpt:'Name (PT)',lb_men:'Name (EN)',lb_mes:'Name (ES)',lb_mcor:'Module color',mm_save:'Save',mm_cancel:'Cancel',mod_del:'Delete module',mod_del_empty:'Delete this module?',mod_del_full:'This module has {N} process(es). They will be moved to "{M}". Continue?',mod_del_last:'Cannot delete the only module.'
   },
   es:{title:'Cockpit AskHR + Línea de Tiempo',subtitle:'Sonova Brasil · Knowledge Capture · Seguimiento diario',
@@ -595,6 +605,9 @@ const I18N={
     assume_confirm_zero:'¿Asumir {m} como mes activo?\n\nNo hay tareas recurrentes concluidas para reabrir.',
     assume_done:'{m} asumido · {n} recurrente(s) reabierta(s)',assume_done_zero:'{m} asumido como mes activo',
     rollover_toast:'Nuevo mes abierto · {m} · {n} recurrente(s) reabierta(s)',
+    migrate_btn:'Migrar {n} al activo',migrate_tip:'Mover todas las actividades de fecha única de este mes al mes activo (mismo día, concluidos vuelven a pendiente).',
+    migrate_confirm:'¿Migrar (mover) {n} actividad(es) de {src} al mes activo {dst}?\n\n• Van al mismo día en el mes activo (manteniendo la duración).\n• Los concluidos vuelven a pendiente (nuevo ciclo).\n• Las recurrentes no se ven afectadas.\n\nConsejo: haga un "Backup JSON" antes si quiere conservar {src}.',
+    migrate_done:'{n} actividad(es) migrada(s) a {dst}',migrate_none:'Ninguna actividad de fecha única en {src} para migrar.',migrate_same:'Ya está en el mes activo.',
     new_code:'HR-000-000',new_name:'Nuevo proceso',new_case:'Nuevo caso',btn_add_mod:'+ Módulo',mod_edit:'Editar módulo',add_proc_here:'+ Proc',empty_module:'Módulo sin procesos. Use "+ Proc" en esta barra para agregar.',new_module:'Nuevo módulo',added_mod:'Módulo creado',code_taken:'El código ya existe.',lb_mcode:'Código del módulo',lb_mpt:'Nombre (PT)',lb_men:'Nombre (EN)',lb_mes:'Nombre (ES)',lb_mcor:'Color del módulo',mm_save:'Guardar',mm_cancel:'Cancelar',mod_del:'Eliminar módulo',mod_del_empty:'¿Eliminar este módulo?',mod_del_full:'Este módulo tiene {N} proceso(s). Se moverán a "{M}". ¿Continuar?',mod_del_last:'No se puede eliminar el único módulo.'
   }
 };
@@ -684,7 +697,17 @@ function pad(n){return String(n).padStart(2,'0');}
 function ymd(y,m,d){return y+'-'+pad(m+1)+'-'+pad(d);}
 function todayYMD(){const d=new Date();return ymd(d.getFullYear(),d.getMonth(),d.getDate());}
 function parseYMD(s){if(!s)return null;const p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
-function isLate(c){if(c.status==='concluido')return false;const d=parseYMD(c.dateFim||c.date);if(!d)return false;const today=parseYMD(todayYMD());return d<today;}
+function activeYM(){const k=state.periodo||currentPeriodKey();const p=String(k).split('-');return{y:+p[0],m:(+p[1])-1};}
+function isLate(c){
+  if(c.status==='concluido')return false;
+  const today=parseYMD(todayYMD());
+  if(c.recorrente){ // recorrente: atraso e relativo a ocorrencia no mes de referencia ativo
+    const a=activeYM();const dd=recurDayInMonth(c,a.y,a.m);if(!dd)return false;
+    return new Date(a.y,a.m,dd)<today;
+  }
+  const d=parseYMD(c.dateFim||c.date);if(!d)return false;
+  return d<today;
+}
 function monthLabel(y,m){return new Date(y,m,1).toLocaleDateString(LANG==='pt'?'pt-BR':LANG==='es'?'es-ES':'en-US',{month:'long',year:'numeric'});}
 function caseColor(c){if(c.cor){const p=palByV(c.cor);if(p.hex)return p.hex;}return csObj(c.status).color;}
 function isLightColor(hex){return hex==='#6EB4DC';}
@@ -865,7 +888,7 @@ function renderTimeline(app){
   const tl=document.createElement('div');tl.className='timeline';
   for(let d=1;d<=dim;d++){
     const dateStr=ymd(curYear,curMonth,d);const wd=new Date(curYear,curMonth,d).getDay();
-    const dayCases=state.cases.filter(c=>c.date===dateStr&&passCase(c));
+    const dayCases=casesOnDay(curYear,curMonth,d);
     const allDone=dayCases.length>0&&dayCases.every(c=>c.status==='concluido');
     const cell=document.createElement('div');
     cell.className='day'+(wd===6?' sat':'')+(wd===0?' sun':'')+(dateStr===todayYMD()?' today':'')+(dateStr===selDay?' sel':'')+(dayCases.length?' hasitem':'')+(allDone?' alldone':'');
@@ -880,7 +903,7 @@ function renderTimeline(app){
   if(!selDay||parseYMD(selDay).getMonth()!==curMonth||parseYMD(selDay).getFullYear()!==curYear)selDay=ymd(curYear,curMonth,Math.min(new Date().getDate(),dim));
   const panel=document.createElement('div');panel.className='daypanel';
   const dsel=parseYMD(selDay);
-  const dcases=state.cases.filter(c=>c.date===selDay&&passCase(c));
+  const dcases=casesOnDay(dsel.getFullYear(),dsel.getMonth(),dsel.getDate());
   panel.innerHTML='<h3>'+t('day_of')+' &middot; '+dsel.toLocaleDateString(LANG==='pt'?'pt-BR':LANG==='es'?'es-ES':'en-US',{weekday:'long',day:'2-digit',month:'long'})+
     '<button class="mini-btn" id="addHere">'+t('add_case_here')+'</button></h3>';
   if(!dcases.length){const e=document.createElement('div');e.className='empty';e.textContent=t('empty_day');panel.appendChild(e);}
@@ -893,6 +916,7 @@ function buildCaseRow(c){
   const row=document.createElement('div');row.className='case-row'+(isLate(c)?' late':'')+(done?' done':'');row.draggable=true;row.dataset.id=c.id;row.style.borderLeftColor=done?'#2E7D32':caseColor(c);
   const cs=csObj(c.status);
   row.innerHTML='<span class="ccode">'+esc(c.proc||t('cm_free'))+'</span><span class="ctit">'+esc(caseLabel(c))+'</span>'+
+    (c.recorrente?'<span class="recor-mark" title="'+esc(t('recor_leg'))+'">&#8635; '+esc(t('recor_leg'))+'</span>':'')+
     (c.resp?'<span class="cresp">'+esc(c.resp)+'</span>':'')+'<span class="cstat" style="background:'+cs.color+'">'+esc(csLabel(c.status))+'</span>';
   row.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/id',c.id);row.classList.add('dragging');});
   row.addEventListener('dragend',()=>row.classList.remove('dragging'));
@@ -902,6 +926,14 @@ function buildCaseRow(c){
 
 /* ===================== CALENDARIO ===================== */
 function recurDayInMonth(c,y,m){const base=parseYMD(c.date);if(!base)return null;const dim=new Date(y,m+1,0).getDate();return Math.min(base.getDate(),dim);}
+/* Casos que ocorrem num dia (y,m,d): data unica com match exato + recorrentes no dia-do-mes.
+   Recorrentes primeiro os de data unica, depois os recorrentes, igual ao calendario. */
+function casesOnDay(y,m,d){
+  const ds=ymd(y,m,d);
+  const single=state.cases.filter(c=>!c.recorrente&&c.date===ds&&passCase(c));
+  const recur=state.cases.filter(c=>c.recorrente&&passCase(c)&&recurDayInMonth(c,y,m)===d);
+  return single.concat(recur);
+}
 function renderCalendario(app){
   app.appendChild(monthNav());
   const leg=document.createElement('div');leg.className='cal-legend';
@@ -1003,6 +1035,7 @@ function renderGantt(app){
   app.appendChild(monthNav());
   const dim=new Date(curYear,curMonth+1,0).getDate();
   const cases=state.cases.filter(passCase).filter(c=>{
+    if(c.recorrente)return true; // recorrente aparece todo mes
     const s=parseYMD(c.date),e=parseYMD(c.dateFim||c.date);if(!s)return false;
     const mS=new Date(curYear,curMonth,1),mE=new Date(curYear,curMonth,dim);return e>=mS&&s<=mE;
   }).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
@@ -1012,9 +1045,13 @@ function renderGantt(app){
   for(let d=1;d<=dim;d++){const wd=new Date(curYear,curMonth,d).getDay();html+='<th class="'+(wd===0||wd===6?'wknd':'')+'">'+d+'</th>';}
   html+='</tr></thead><tbody>';
   cases.forEach(c=>{
-    const s=parseYMD(c.date),e=parseYMD(c.dateFim||c.date);
-    const sd=(s.getMonth()===curMonth&&s.getFullYear()===curYear)?s.getDate():1;
-    const ed=(e.getMonth()===curMonth&&e.getFullYear()===curYear)?e.getDate():dim;
+    let sd,ed;
+    if(c.recorrente){sd=ed=recurDayInMonth(c,curYear,curMonth);}
+    else{
+      const s=parseYMD(c.date),e=parseYMD(c.dateFim||c.date);
+      sd=(s.getMonth()===curMonth&&s.getFullYear()===curYear)?s.getDate():1;
+      ed=(e.getMonth()===curMonth&&e.getFullYear()===curYear)?e.getDate():dim;
+    }
     html+='<tr><td class="glabel"><span class="gproc">'+esc(c.proc||'')+'</span> <span class="gtit">'+esc(caseLabel(c))+'</span></td>';
     for(let d=1;d<=dim;d++){
       const wd=new Date(curYear,curMonth,d).getDay();const isToday=ymd(curYear,curMonth,d)===todayYMD();
@@ -1032,13 +1069,19 @@ function renderGantt(app){
 function monthNav(){
   const nav=document.createElement('div');nav.className='month-nav';
   const isActive=(state.periodo===periodKey(curYear,curMonth));
-  const tail=isActive
-    ? '<span class="period-active" title="'+esc(t('period_active_tip'))+'">&#9679; '+esc(t('period_active'))+'</span>'
-    : '<button id="mAssume" class="period-btn" title="'+esc(t('period_active_tip'))+'">'+esc(t('assume_btn'))+'</button>';
+  let tail;
+  if(isActive){
+    tail='<span class="period-active" title="'+esc(t('period_active_tip'))+'">&#9679; '+esc(t('period_active'))+'</span>';
+  }else{
+    const migN=oneTimeCasesInMonth(curYear,curMonth).length;
+    tail='<button id="mAssume" class="period-btn" title="'+esc(t('period_active_tip'))+'">'+esc(t('assume_btn'))+'</button>'
+       +(migN?'<button id="mMigrate" class="period-btn migrate" title="'+esc(t('migrate_tip'))+'">'+esc(t('migrate_btn').replace('{n}',migN))+'</button>':'');
+  }
   nav.innerHTML='<button id="mPrev">&#8249;</button><span class="mlabel">'+esc(monthLabel(curYear,curMonth))+'</span><button id="mNext">&#8250;</button>'+tail;
   nav.querySelector('#mPrev').addEventListener('click',()=>{curMonth--;if(curMonth<0){curMonth=11;curYear--;}render();});
   nav.querySelector('#mNext').addEventListener('click',()=>{curMonth++;if(curMonth>11){curMonth=0;curYear++;}render();});
   const asm=nav.querySelector('#mAssume');if(asm)asm.addEventListener('click',()=>assumeMonth(curYear,curMonth));
+  const mig=nav.querySelector('#mMigrate');if(mig)mig.addEventListener('click',migrateMonthToActive);
   return nav;
 }
 
@@ -1078,6 +1121,41 @@ function assumeMonth(y,m){
   allDoneFlag=(state.cases.length>0&&state.cases.every(c=>c.status==='concluido'));
   persist();render();
   toast((n>0?t('assume_done'):t('assume_done_zero')).replace('{m}',label).replace('{n}',n));
+}
+
+/* Casos de DATA UNICA (nao recorrentes) cuja data cai no mes (y,m). */
+function oneTimeCasesInMonth(y,m){
+  return state.cases.filter(c=>{
+    if(c.recorrente||!c.date)return false;
+    const d=parseYMD(c.date);return d&&d.getFullYear()===y&&d.getMonth()===m;
+  });
+}
+/* Migra (MOVE) todas as atividades de data unica do mes visualizado para o mes ativo,
+   preservando o dia-do-mes (com clamp) e a duracao (dateFim). Concluidos voltam para
+   pendente (novo ciclo). Recorrentes nao sao afetadas — ja aparecem em todo mes. */
+function migrateMonthToActive(){
+  const a=activeYM();
+  if(a.y===curYear&&a.m===curMonth){toast(t('migrate_same'));return;}
+  const src=oneTimeCasesInMonth(curYear,curMonth);
+  const srcLabel=monthLabel(curYear,curMonth),dstLabel=monthLabel(a.y,a.m);
+  if(!src.length){toast(t('migrate_none').replace('{src}',srcLabel));return;}
+  const msg=t('migrate_confirm').replace('{n}',src.length).replace('{src}',srcLabel).replace('{dst}',dstLabel);
+  if(!confirm(msg))return;
+  const dimDst=new Date(a.y,a.m+1,0).getDate();const DAY=86400000;
+  let n=0;
+  src.forEach(c=>{
+    const s0=parseYMD(c.date);
+    const durDays=c.dateFim?Math.max(0,Math.round((parseYMD(c.dateFim)-s0)/DAY)):0;
+    const nd=Math.min(s0.getDate(),dimDst);
+    c.date=ymd(a.y,a.m,nd);
+    if(c.dateFim){const e=new Date(a.y,a.m,nd);e.setDate(e.getDate()+durDays);c.dateFim=ymd(e.getFullYear(),e.getMonth(),e.getDate());}
+    if(c.status==='concluido')c.status='pendente';   // novo ciclo
+    n++;
+  });
+  curYear=a.y;curMonth=a.m;selDay=ymd(a.y,a.m,1);
+  allDoneFlag=(state.cases.length>0&&state.cases.every(c=>c.status==='concluido'));
+  persist();render();
+  toast(t('migrate_done').replace('{n}',n).replace('{dst}',dstLabel));
 }
 
 /* ===================== CASE MODAL ===================== */
