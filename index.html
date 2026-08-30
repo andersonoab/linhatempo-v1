@@ -123,6 +123,12 @@
     border-radius:50%;cursor:pointer;font-size:16px;line-height:1}
   .month-nav button:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
   .month-nav .mlabel{font-family:'Rufina',serif;font-size:20px;font-weight:700;color:var(--navy);min-width:220px;text-align:center;text-transform:capitalize}
+  /* botao "Assumir mes" — escapa do estilo circular do .month-nav button */
+  .month-nav .period-btn{width:auto;height:34px;border-radius:17px;padding:0 15px;font-family:'Roboto';
+    font-size:12.5px;font-weight:500;border:1px solid var(--blue);background:#fff;color:var(--blue);letter-spacing:.3px;cursor:pointer}
+  .month-nav .period-btn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .month-nav .period-active{font-family:'Roboto';font-size:12px;font-weight:500;color:var(--done);
+    background:#E3F1E4;border:1px solid #BFE3C2;border-radius:17px;padding:6px 13px;letter-spacing:.3px;white-space:nowrap;cursor:default}
 
   /* ===== TIMELINE ===== */
   .timeline{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:20px}
@@ -514,7 +520,14 @@ const I18N={
     reset_done:'Padrão restaurado',imported:'Dados importados',bad_file:'Arquivo inválido',
     reset_confirm:'Restaurar catálogo (44 processos) e apagar TODOS os casos? Todas as edições serão perdidas.',
     del_confirm:'Excluir este item?',quota:'Armazenamento cheio - exporte um backup.',xlsx_fail:'Excel indisponível - exportado como CSV.',
-    moved:'caso(s) movido(s)',all_done:'Parabéns! Todos os casos concluídos.',new_code:'HR-000-000',new_name:'Novo processo',new_case:'Novo caso',btn_add_mod:'+ Módulo',mod_edit:'Editar módulo',add_proc_here:'+ Proc',empty_module:'Módulo sem processos. Use "+ Proc" nesta barra para adicionar.',new_module:'Novo módulo',added_mod:'Módulo criado',code_taken:'Código já existe.',lb_mcode:'Código do módulo',lb_mpt:'Nome (PT)',lb_men:'Nome (EN)',lb_mes:'Nome (ES)',lb_mcor:'Cor do módulo',mm_save:'Salvar',mm_cancel:'Cancelar',mod_del:'Excluir módulo',mod_del_empty:'Excluir este módulo?',mod_del_full:'Este módulo tem {N} processo(s). Eles serão movidos para "{M}". Continuar?',mod_del_last:'Não é possível excluir o único módulo.'
+    moved:'caso(s) movido(s)',all_done:'Parabéns! Todos os casos concluídos.',
+    period_active:'Mês ativo',period_active_tip:'Mês de referência. Ao virar o mês, as tarefas recorrentes concluídas são reabertas automaticamente.',
+    assume_btn:'Assumir mês',
+    assume_confirm:'Assumir {m} como mês ativo?\n\nIsto vai reabrir {n} tarefa(s) recorrente(s) concluída(s) para o novo ciclo. Tarefas de data única não são afetadas.',
+    assume_confirm_zero:'Assumir {m} como mês ativo?\n\nNão há tarefas recorrentes concluídas para reabrir.',
+    assume_done:'{m} assumido · {n} recorrente(s) reaberta(s)',assume_done_zero:'{m} assumido como mês ativo',
+    rollover_toast:'Novo mês aberto · {m} · {n} recorrente(s) reaberta(s)',
+    new_code:'HR-000-000',new_name:'Novo processo',new_case:'Novo caso',btn_add_mod:'+ Módulo',mod_edit:'Editar módulo',add_proc_here:'+ Proc',empty_module:'Módulo sem processos. Use "+ Proc" nesta barra para adicionar.',new_module:'Novo módulo',added_mod:'Módulo criado',code_taken:'Código já existe.',lb_mcode:'Código do módulo',lb_mpt:'Nome (PT)',lb_men:'Nome (EN)',lb_mes:'Nome (ES)',lb_mcor:'Cor do módulo',mm_save:'Salvar',mm_cancel:'Cancelar',mod_del:'Excluir módulo',mod_del_empty:'Excluir este módulo?',mod_del_full:'Este módulo tem {N} processo(s). Eles serão movidos para "{M}". Continuar?',mod_del_last:'Não é possível excluir o único módulo.'
   },
   en:{title:'AskHR Cockpit + Timeline',subtitle:'Sonova Brazil · Knowledge Capture · Daily tracking',
     nav_proc:'Processes',nav_timeline:'Timeline',nav_cal:'Calendar',nav_kanban:'Flow',nav_gantt:'Gantt',
@@ -541,7 +554,14 @@ const I18N={
     reset_done:'Default restored',imported:'Data imported',bad_file:'Invalid file',
     reset_confirm:'Reset catalog (44 processes) and delete ALL cases? All edits will be lost.',
     del_confirm:'Delete this item?',quota:'Storage full - export a backup.',xlsx_fail:'Excel unavailable - exported as CSV.',
-    moved:'case(s) moved',all_done:'Congratulations! All cases completed.',new_code:'HR-000-000',new_name:'New process',new_case:'New case',btn_add_mod:'+ Module',mod_edit:'Edit module',add_proc_here:'+ Proc',empty_module:'Module has no processes. Use "+ Proc" on this bar to add.',new_module:'New module',added_mod:'Module created',code_taken:'Code already exists.',lb_mcode:'Module code',lb_mpt:'Name (PT)',lb_men:'Name (EN)',lb_mes:'Name (ES)',lb_mcor:'Module color',mm_save:'Save',mm_cancel:'Cancel',mod_del:'Delete module',mod_del_empty:'Delete this module?',mod_del_full:'This module has {N} process(es). They will be moved to "{M}". Continue?',mod_del_last:'Cannot delete the only module.'
+    moved:'case(s) moved',all_done:'Congratulations! All cases completed.',
+    period_active:'Active month',period_active_tip:'Reference month. When the month changes, completed recurring tasks are reopened automatically.',
+    assume_btn:'Set active',
+    assume_confirm:'Set {m} as the active month?\n\nThis will reopen {n} completed recurring task(s) for the new cycle. Single-date tasks are not affected.',
+    assume_confirm_zero:'Set {m} as the active month?\n\nThere are no completed recurring tasks to reopen.',
+    assume_done:'{m} set active · {n} recurring reopened',assume_done_zero:'{m} set as active month',
+    rollover_toast:'New month opened · {m} · {n} recurring reopened',
+    new_code:'HR-000-000',new_name:'New process',new_case:'New case',btn_add_mod:'+ Module',mod_edit:'Edit module',add_proc_here:'+ Proc',empty_module:'Module has no processes. Use "+ Proc" on this bar to add.',new_module:'New module',added_mod:'Module created',code_taken:'Code already exists.',lb_mcode:'Module code',lb_mpt:'Name (PT)',lb_men:'Name (EN)',lb_mes:'Name (ES)',lb_mcor:'Module color',mm_save:'Save',mm_cancel:'Cancel',mod_del:'Delete module',mod_del_empty:'Delete this module?',mod_del_full:'This module has {N} process(es). They will be moved to "{M}". Continue?',mod_del_last:'Cannot delete the only module.'
   },
   es:{title:'Cockpit AskHR + Línea de Tiempo',subtitle:'Sonova Brasil · Knowledge Capture · Seguimiento diario',
     nav_proc:'Procesos',nav_timeline:'Línea de Tiempo',nav_cal:'Calendario',nav_kanban:'Flujo',nav_gantt:'Gantt',
@@ -568,14 +588,21 @@ const I18N={
     reset_done:'Predeterminado restaurado',imported:'Datos importados',bad_file:'Archivo inválido',
     reset_confirm:'¿Restaurar catálogo (44 procesos) y eliminar TODOS los casos? Se perderán todas las ediciones.',
     del_confirm:'¿Eliminar este elemento?',quota:'Almacenamiento lleno - exporte un backup.',xlsx_fail:'Excel no disponible - exportado como CSV.',
-    moved:'caso(s) movido(s)',all_done:'¡Felicidades! Todos los casos completados.',new_code:'HR-000-000',new_name:'Nuevo proceso',new_case:'Nuevo caso',btn_add_mod:'+ Módulo',mod_edit:'Editar módulo',add_proc_here:'+ Proc',empty_module:'Módulo sin procesos. Use "+ Proc" en esta barra para agregar.',new_module:'Nuevo módulo',added_mod:'Módulo creado',code_taken:'El código ya existe.',lb_mcode:'Código del módulo',lb_mpt:'Nombre (PT)',lb_men:'Nombre (EN)',lb_mes:'Nombre (ES)',lb_mcor:'Color del módulo',mm_save:'Guardar',mm_cancel:'Cancelar',mod_del:'Eliminar módulo',mod_del_empty:'¿Eliminar este módulo?',mod_del_full:'Este módulo tiene {N} proceso(s). Se moverán a "{M}". ¿Continuar?',mod_del_last:'No se puede eliminar el único módulo.'
+    moved:'caso(s) movido(s)',all_done:'¡Felicidades! Todos los casos completados.',
+    period_active:'Mes activo',period_active_tip:'Mes de referencia. Al cambiar de mes, las tareas recurrentes concluidas se reabren automáticamente.',
+    assume_btn:'Asumir mes',
+    assume_confirm:'¿Asumir {m} como mes activo?\n\nEsto reabrirá {n} tarea(s) recurrente(s) concluida(s) para el nuevo ciclo. Las tareas de fecha única no se ven afectadas.',
+    assume_confirm_zero:'¿Asumir {m} como mes activo?\n\nNo hay tareas recurrentes concluidas para reabrir.',
+    assume_done:'{m} asumido · {n} recurrente(s) reabierta(s)',assume_done_zero:'{m} asumido como mes activo',
+    rollover_toast:'Nuevo mes abierto · {m} · {n} recurrente(s) reabierta(s)',
+    new_code:'HR-000-000',new_name:'Nuevo proceso',new_case:'Nuevo caso',btn_add_mod:'+ Módulo',mod_edit:'Editar módulo',add_proc_here:'+ Proc',empty_module:'Módulo sin procesos. Use "+ Proc" en esta barra para agregar.',new_module:'Nuevo módulo',added_mod:'Módulo creado',code_taken:'El código ya existe.',lb_mcode:'Código del módulo',lb_mpt:'Nombre (PT)',lb_men:'Nombre (EN)',lb_mes:'Nombre (ES)',lb_mcor:'Color del módulo',mm_save:'Guardar',mm_cancel:'Cancelar',mod_del:'Eliminar módulo',mod_del_empty:'¿Eliminar este módulo?',mod_del_full:'Este módulo tiene {N} proceso(s). Se moverán a "{M}". ¿Continuar?',mod_del_last:'No se puede eliminar el único módulo.'
   }
 };
 
 /* ===================== ESTADO ===================== */
 let LANG='pt';
 let VIEW='processos';
-let state={catalog:[],cases:[],collapsed:{}};
+let state={catalog:[],cases:[],collapsed:{},periodo:null};
 const filters={search:'',mod:'',temos:'',status:'',cstatus:''};
 let curYear,curMonth,selDay;
 let editingCaseId=null,editingColor='';
@@ -610,12 +637,12 @@ function loadState(){
   if(raw){try{const p=JSON.parse(raw);
     if(p&&Array.isArray(p.catalog)&&p.catalog.length){
       state={catalog:p.catalog,cases:Array.isArray(p.cases)?p.cases:[],collapsed:p.collapsed||{},
-        modules:(Array.isArray(p.modules)&&p.modules.length)?p.modules:seedModules()};
+        modules:(Array.isArray(p.modules)&&p.modules.length)?p.modules:seedModules(),periodo:p.periodo||null};
       state.cases.forEach(c=>{if(!c.id)c.id=uid();});
       normalizeModules();normalizeCases();
       return;}
   }catch(e){}}
-  state={catalog:SEED.map(seedToItem),cases:[],collapsed:{},modules:seedModules()};
+  state={catalog:SEED.map(seedToItem),cases:[],collapsed:{},modules:seedModules(),periodo:null};
 }
 function seedModules(){return DEFAULT_MODULES.map(m=>({id:m.id,en:m.en,pt:m.pt,es:m.es,color:MOD_COLOR[m.id]||'#0083CA',custom:false}));}
 function normalizeModules(){
@@ -1004,10 +1031,53 @@ function renderGantt(app){
 /* ===================== MONTH NAV ===================== */
 function monthNav(){
   const nav=document.createElement('div');nav.className='month-nav';
-  nav.innerHTML='<button id="mPrev">&#8249;</button><span class="mlabel">'+esc(monthLabel(curYear,curMonth))+'</span><button id="mNext">&#8250;</button>';
+  const isActive=(state.periodo===periodKey(curYear,curMonth));
+  const tail=isActive
+    ? '<span class="period-active" title="'+esc(t('period_active_tip'))+'">&#9679; '+esc(t('period_active'))+'</span>'
+    : '<button id="mAssume" class="period-btn" title="'+esc(t('period_active_tip'))+'">'+esc(t('assume_btn'))+'</button>';
+  nav.innerHTML='<button id="mPrev">&#8249;</button><span class="mlabel">'+esc(monthLabel(curYear,curMonth))+'</span><button id="mNext">&#8250;</button>'+tail;
   nav.querySelector('#mPrev').addEventListener('click',()=>{curMonth--;if(curMonth<0){curMonth=11;curYear--;}render();});
   nav.querySelector('#mNext').addEventListener('click',()=>{curMonth++;if(curMonth>11){curMonth=0;curYear++;}render();});
+  const asm=nav.querySelector('#mAssume');if(asm)asm.addEventListener('click',()=>assumeMonth(curYear,curMonth));
   return nav;
+}
+
+/* ===================== VIRADA DE MES (recorrentes) =====================
+   Casos recorrentes mensais tem um unico status; ao abrir um novo mes de
+   referencia, os que estao "concluido" voltam para "pendente" para o novo
+   ciclo. Tarefas de data unica nao sao afetadas (mantem o historico).
+   - Automatico: toda vez que o app abre num mes-calendario a frente do
+     mes de referencia salvo (state.periodo).
+   - Manual: botao "Assumir mes" para meses atipicos (ex.: virar setembro
+     antes/depois da data, ou reabrir o ciclo sob demanda).                 */
+function periodKey(y,m){return y+'-'+pad(m+1);}
+function currentPeriodKey(){const d=new Date();return periodKey(d.getFullYear(),d.getMonth());}
+function labelFromKey(k){const p=String(k||'').split('-');return monthLabel(+p[0],(+p[1])-1);}
+function resetRecurringDone(){let n=0;state.cases.forEach(c=>{if(c.recorrente&&c.status==='concluido'){c.status='pendente';n++;}});return n;}
+/* Chamado no init. Retorna a mensagem de toast (ou null) para exibir apos o render. */
+function monthlyRolloverCheck(){
+  const cur=currentPeriodKey();
+  if(!state.periodo){state.periodo=cur;persist();return null;}     // primeira marcacao, sem reset
+  if(cur>state.periodo){                                            // 'YYYY-MM' compara certo, inclusive virada de ano
+    const n=resetRecurringDone();
+    state.periodo=cur;
+    allDoneFlag=(state.cases.length>0&&state.cases.every(c=>c.status==='concluido'));
+    persist();
+    return t('rollover_toast').replace('{m}',labelFromKey(cur)).replace('{n}',n);
+  }
+  return null;
+}
+/* Assume manualmente o mes visualizado como mes de referencia e reabre os recorrentes concluidos. */
+function assumeMonth(y,m){
+  const key=periodKey(y,m),label=monthLabel(y,m);
+  const n=state.cases.filter(c=>c.recorrente&&c.status==='concluido').length;
+  const msg=(n>0?t('assume_confirm'):t('assume_confirm_zero')).replace('{m}',label).replace('{n}',n);
+  if(!confirm(msg))return;
+  resetRecurringDone();
+  state.periodo=key;curYear=y;curMonth=m;selDay=ymd(y,m,1);
+  allDoneFlag=(state.cases.length>0&&state.cases.every(c=>c.status==='concluido'));
+  persist();render();
+  toast((n>0?t('assume_done'):t('assume_done_zero')).replace('{m}',label).replace('{n}',n));
 }
 
 /* ===================== CASE MODAL ===================== */
@@ -1292,7 +1362,7 @@ function importJSON(file){
     try{
       if(p&&Array.isArray(p.catalog)){
         state={catalog:p.catalog,cases:Array.isArray(p.cases)?p.cases:[],collapsed:p.collapsed||{},
-          modules:(Array.isArray(p.modules)&&p.modules.length)?p.modules:seedModules()};
+          modules:(Array.isArray(p.modules)&&p.modules.length)?p.modules:seedModules(),periodo:p.periodo||currentPeriodKey()};
         state.cases.forEach(c=>{if(!c.id)c.id=uid();});normalizeModules();normalizeCases();
         allDoneFlag=(state.cases.length>0&&state.cases.every(c=>c.status==='concluido'));
         persist();render();toast(t('imported'));
@@ -1309,7 +1379,7 @@ function importJSON(file){
   };
   rd.readAsText(file);
 }
-function resetDefault(){if(confirm(t('reset_confirm'))){state={catalog:SEED.map(seedToItem),cases:[],collapsed:{},modules:seedModules()};allDoneFlag=false;persist();render();toast(t('reset_done'));}}
+function resetDefault(){if(confirm(t('reset_confirm'))){state={catalog:SEED.map(seedToItem),cases:[],collapsed:{},modules:seedModules(),periodo:currentPeriodKey()};allDoneFlag=false;persist();render();toast(t('reset_done'));}}
 
 /* ===================== CHROME / i18n ===================== */
 function applyChrome(){
@@ -1389,8 +1459,11 @@ function bind(){
 /* ===================== INIT ===================== */
 (function init(){
   const now=new Date();curYear=now.getFullYear();curMonth=now.getMonth();selDay=todayYMD();
-  loadState();allDoneFlag=(state.cases.length>0&&state.cases.every(c=>c.status==='concluido'));
+  loadState();
+  const rollMsg=monthlyRolloverCheck();                 // virada automatica de mes (recorrentes concluidos -> pendentes)
+  allDoneFlag=(state.cases.length>0&&state.cases.every(c=>c.status==='concluido'));
   bind();render();
+  if(rollMsg)setTimeout(()=>toast(rollMsg),450);
   if(!storageAvailable()){setTimeout(warnNoStorage,700);}
 })();
 </script>
