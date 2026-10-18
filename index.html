@@ -270,6 +270,7 @@ var XLSX={};function make_xlsx_lib(a){a.version="0.18.5",a.style_version="1.2.0"
   .rh-control-row+.rh-control-row{margin-top:10px}.rh-control-row input,.rh-control-row select{font:inherit;font-size:12px;padding:8px;border:1px solid var(--border);border-radius:5px;max-width:100%;color:var(--text);background:#fff}
   .rh-control-row input{flex:1;min-width:180px}.rh-control-row select{max-width:260px}
   .rh-read-status{font-size:12px;color:var(--text2);flex:1;min-width:240px}
+  .rh-storage-status{font-size:12px;color:var(--navy);line-height:1.5}.rh-storage-error,.rh-storage-warning{color:var(--wine);font-weight:500}
   .rh-title{font-size:20px;color:var(--navy);margin-bottom:3px}.rh-caption{font-size:12px;color:var(--text2);margin-bottom:12px}
   .rh-chip{display:flex;flex-direction:column;align-items:stretch;padding:5px 6px;gap:4px;cursor:pointer;min-height:48px;font-weight:400}
   .rh-chip .rh-chip-top{display:flex;gap:4px;align-items:flex-start}.rh-chip .chtxt{white-space:normal;overflow:visible;text-overflow:clip;font-size:11px;line-height:1.3}
@@ -343,6 +344,7 @@ var XLSX={};function make_xlsx_lib(a){a.version="0.18.5",a.style_version="1.2.0"
 
 <section id="rhControls" class="rh-controls hidden" aria-label="Controles do segundo calendário">
   <div class="rh-control-row"><button class="btn" id="rhReadExcel">Ler Excel de faturamento</button><span class="rh-read-status" id="rhReadStatus"></span><button class="mini-btn" id="rhWarnings" hidden></button></div>
+  <div class="rh-control-row"><span id="rhStorageStatus" class="rh-storage-status" role="status" aria-live="polite"></span></div>
   <div class="rh-control-row">
     <input id="rhSearch" placeholder="Buscar atividade RH, código ou observação" aria-label="Buscar atividade RH">
     <select id="rhOwner" aria-label="Responsável RH"></select><select id="rhProcess" aria-label="Processo RH"></select>
@@ -1603,18 +1605,29 @@ const RH_FIELDS=['titulo','proc','resp','date','dateFim','status','completed','o
 let rhState={cases:[],deleted:{},meta:null,version:2};
 let rhYear=new Date().getFullYear(),rhMonthIndex=new Date().getMonth(),rhPage=0,rhShowHidden=false;
 let rhFilters={search:'',owner:'',process:'',status:''},rhSort={key:'titulo',dir:1};
+let rhStorage={ok:true,loaded:false,backupOk:true};
 function rhNorm(v){return String(v==null?'':v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();}
 function rhClone(v){return JSON.parse(JSON.stringify(v));}
 function rhStatus(c){return RH_STATUSES.find(s=>s.v===c.status)||RH_STATUSES[0];}
 function rhColor(c){return c.cor?(palByV(c.cor).hex||rhStatus(c).color):rhStatus(c).color;}
 function rhBase(c){return Object.fromEntries(RH_FIELDS.map(k=>[k,c[k]??(['recorrente','noCal'].includes(k)?false:'')]));}
 function rhPersist(){
-  try{const raw=JSON.stringify({...rhState,view:{year:rhYear,month:rhMonthIndex}});localStorage.setItem(RH_LS,raw);localStorage.setItem(RH_LS+'_backup',raw);return true;}
-  catch(e){toast('Não foi possível salvar o calendário RH neste navegador. Use Backup RH antes de fechar.');return false;}
+  const savedAt=new Date().toISOString();let raw;
+  try{raw=JSON.stringify({...rhState,savedAt,view:{year:rhYear,month:rhMonthIndex}});localStorage.setItem(RH_LS,raw);rhState.savedAt=savedAt;rhStorage.ok=true;}
+  catch(e){rhStorage.ok=false;rhShowStorageStatus();toast('Não foi possível salvar o calendário RH neste navegador. Use Backup RH antes de fechar.');return false;}
+  try{localStorage.setItem(RH_LS+'_backup',raw);rhStorage.backupOk=true;}catch(e){rhStorage.backupOk=false;}
+  rhShowStorageStatus();return true;
+}
+function rhShowStorageStatus(){
+  const el=document.getElementById('rhStorageStatus');if(!el)return;
+  el.classList.toggle('rh-storage-error',!rhStorage.ok);el.classList.toggle('rh-storage-warning',rhStorage.ok&&!rhStorage.backupOk);
+  if(!rhStorage.ok){el.textContent='Não salvo neste navegador. Baixe o Backup RH antes de fechar.';return;}
+  const n=rhState.cases.length;
+  el.textContent=(rhState.savedAt?'Salvo neste navegador · '+new Date(rhState.savedAt).toLocaleString('pt-BR'):rhStorage.loaded?'Dados recuperados deste navegador':'Salvamento automático ativo')+' · '+n+' atividade(s) da equipe'+(!rhStorage.backupOk?' · cópia de segurança local indisponível':'');
 }
 function rhLoad(){
   for(const key of [RH_LS,RH_LS+'_backup']){
-    try{const p=JSON.parse(localStorage.getItem(key)||'null');if(p&&Array.isArray(p.cases)){rhState={...p,deleted:p.deleted||{},version:2};if(p.view&&Number.isInteger(p.view.year)&&p.view.month>=0&&p.view.month<12){rhYear=p.view.year;rhMonthIndex=p.view.month;}rhMonthlyRolloverCheck();return;}}catch(e){}
+    try{const p=JSON.parse(localStorage.getItem(key)||'null');if(p&&Array.isArray(p.cases)){rhState={...p,deleted:p.deleted||{},version:2};rhStorage.loaded=true;if(p.view&&Number.isInteger(p.view.year)&&p.view.month>=0&&p.view.month<12){rhYear=p.view.year;rhMonthIndex=p.view.month;}rhMonthlyRolloverCheck();return;}}catch(e){}
   }
   rhMonthlyRolloverCheck();
 }
@@ -1781,6 +1794,7 @@ function rhPass(c){
 }
 function rhRender(){
   applyChrome();document.getElementById('toolbar').classList.add('hidden');document.getElementById('rhControls').classList.remove('hidden');
+  rhShowStorageStatus();
   const owner=document.getElementById('rhOwner'),process=document.getElementById('rhProcess');
   const options=(values,label)=>'<option value="">'+label+'</option>'+values.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');
   owner.innerHTML=options([...new Set(rhState.cases.map(c=>c.resp).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR')),'Todos os responsáveis');owner.value=rhFilters.owner;
