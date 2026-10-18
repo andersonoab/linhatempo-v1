@@ -344,7 +344,7 @@ var XLSX={};function make_xlsx_lib(a){a.version="0.18.5",a.style_version="1.2.0"
 
 <section id="rhControls" class="rh-controls hidden" aria-label="Controles do segundo calendário">
   <div class="rh-control-row"><button class="btn" id="rhReadExcel">Ler Excel de faturamento</button><span class="rh-read-status" id="rhReadStatus"></span><button class="mini-btn" id="rhWarnings" hidden></button></div>
-  <div class="rh-control-row"><span id="rhStorageStatus" class="rh-storage-status" role="status" aria-live="polite"></span></div>
+  <div class="rh-control-row"><span id="rhStorageStatus" class="rh-storage-status" role="status" aria-live="polite"></span><button id="rhRetrySave" class="mini-btn" hidden>Tentar salvar novamente</button></div>
   <div class="rh-control-row">
     <input id="rhSearch" placeholder="Buscar atividade RH, código ou observação" aria-label="Buscar atividade RH">
     <select id="rhOwner" aria-label="Responsável RH"></select><select id="rhProcess" aria-label="Processo RH"></select>
@@ -1605,30 +1605,74 @@ const RH_FIELDS=['titulo','proc','resp','date','dateFim','status','completed','o
 let rhState={cases:[],deleted:{},meta:null,version:2};
 let rhYear=new Date().getFullYear(),rhMonthIndex=new Date().getMonth(),rhPage=0,rhShowHidden=false;
 let rhFilters={search:'',owner:'',process:'',status:''},rhSort={key:'titulo',dir:1};
-let rhStorage={ok:true,loaded:false,backupOk:true};
+let rhStorage={ok:true,loaded:false,backupOk:true,pending:false,error:''};
+let rhWriteQueue=Promise.resolve(),rhWriteVersion=0,rhSnapshotClock=0;
+const RH_DB='sonova_rh_calendar',RH_DB_KEY=RH_LS+(location.protocol==='file:'?':'+location.pathname:'');
 function rhNorm(v){return String(v==null?'':v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();}
 function rhClone(v){return JSON.parse(JSON.stringify(v));}
 function rhStatus(c){return RH_STATUSES.find(s=>s.v===c.status)||RH_STATUSES[0];}
 function rhColor(c){return c.cor?(palByV(c.cor).hex||rhStatus(c).color):rhStatus(c).color;}
 function rhBase(c){return Object.fromEntries(RH_FIELDS.map(k=>[k,c[k]??(['recorrente','noCal'].includes(k)?false:'')]));}
+function rhDatabase(mode,raw){
+  return new Promise((resolve,reject)=>{
+    let db,transaction,finished=false,result;
+    const finish=(error)=>{if(finished)return;finished=true;clearTimeout(timer);if(db)db.close();error?reject(error):resolve(result);};
+    const timer=setTimeout(()=>{if(transaction)transaction.abort();finish(new Error('Tempo limite ao acessar o banco local.'));},5000);
+    let request;try{request=indexedDB.open(RH_DB,1);}catch(e){finish(e);return;}
+    request.onupgradeneeded=()=>{const database=request.result;if(!database.objectStoreNames.contains('snapshots'))database.createObjectStore('snapshots');};
+    request.onerror=()=>finish(request.error||new Error('Banco local indisponível.'));
+    request.onblocked=()=>finish(new Error('Banco local bloqueado por outra aba.'));
+    request.onsuccess=()=>{
+      db=request.result;if(finished){db.close();return;}
+      try{
+        transaction=db.transaction('snapshots',mode);const store=transaction.objectStore('snapshots');
+        const operation=mode==='readonly'?store.get(RH_DB_KEY):store.put(raw,RH_DB_KEY);
+        operation.onsuccess=()=>{result=operation.result;};
+        transaction.oncomplete=()=>finish();
+        transaction.onabort=transaction.onerror=()=>finish(transaction.error||new Error('A gravação local não foi concluída.'));
+      }catch(e){finish(e);}
+    };
+  });
+}
 function rhPersist(){
-  const savedAt=new Date().toISOString();let raw;
-  try{raw=JSON.stringify({...rhState,savedAt,view:{year:rhYear,month:rhMonthIndex}});localStorage.setItem(RH_LS,raw);rhState.savedAt=savedAt;rhStorage.ok=true;}
-  catch(e){rhStorage.ok=false;rhShowStorageStatus();toast('Não foi possível salvar o calendário RH neste navegador. Use Backup RH antes de fechar.');return false;}
-  try{localStorage.setItem(RH_LS+'_backup',raw);rhStorage.backupOk=true;}catch(e){rhStorage.backupOk=false;}
-  rhShowStorageStatus();return true;
+  rhSnapshotClock=Math.max(Date.now(),rhSnapshotClock+1,(Date.parse(rhState.savedAt)||0)+1);
+  const savedAt=new Date(rhSnapshotClock).toISOString(),revision=++rhWriteVersion;
+  const raw=JSON.stringify({...rhState,savedAt,view:{year:rhYear,month:rhMonthIndex}});
+  let localSaved=false,localError='';rhStorage.pending=true;
+  try{localStorage.setItem(RH_LS,raw);localSaved=true;rhState.savedAt=savedAt;}catch(e){localError=e.name||e.message;}
+  rhStorage.ok=localSaved;rhStorage.error='';
+  try{localStorage.setItem(RH_LS+'_backup',raw);rhStorage.backupOk=true;if(!localSaved){localSaved=true;rhStorage.ok=true;rhState.savedAt=savedAt;}}catch(e){rhStorage.backupOk=false;}
+  // Serializar os snapshots impede uma gravação antiga de sobrescrever a última edição.
+  rhWriteQueue=rhWriteQueue.catch(()=>{}).then(()=>rhDatabase('readwrite',raw)).then(()=>{
+    if(revision!==rhWriteVersion)return;
+    rhState.savedAt=savedAt;rhStorage.ok=true;rhStorage.pending=false;rhStorage.backupOk=true;rhStorage.error='';rhShowStorageStatus();
+    if(!localSaved)toast('Atividades da equipe salvas neste navegador.');
+  }).catch(e=>{
+    if(revision!==rhWriteVersion)return;
+    rhStorage.pending=false;rhStorage.ok=localSaved;rhStorage.error=[localError,e.name||e.message].filter(Boolean).join(' · ');rhShowStorageStatus();
+    if(!localSaved)toast('O navegador bloqueou o salvamento. Baixe o Backup RH e abra o HTML baixado diretamente no Chrome ou Edge.');
+  });
+  rhShowStorageStatus();return localSaved;
 }
 function rhShowStorageStatus(){
   const el=document.getElementById('rhStorageStatus');if(!el)return;
-  el.classList.toggle('rh-storage-error',!rhStorage.ok);el.classList.toggle('rh-storage-warning',rhStorage.ok&&!rhStorage.backupOk);
-  if(!rhStorage.ok){el.textContent='Não salvo neste navegador. Baixe o Backup RH antes de fechar.';return;}
+  const saving=rhStorage.pending&&!rhStorage.ok;
+  el.classList.toggle('rh-storage-error',!rhStorage.ok&&!saving);el.classList.toggle('rh-storage-warning',rhStorage.ok&&!rhStorage.backupOk&&!rhStorage.pending);el.title=rhStorage.error||'';
+  const retry=document.getElementById('rhRetrySave');if(retry)retry.hidden=rhStorage.ok||saving;
+  if(saving){el.textContent='Salvando as atividades da equipe neste navegador…';return;}
+  if(!rhStorage.ok){el.textContent='O navegador bloqueou o salvamento. Baixe o Backup RH antes de fechar e abra o HTML baixado diretamente no Chrome ou Edge.';return;}
   const n=rhState.cases.length;
   el.textContent=(rhState.savedAt?'Salvo neste navegador · '+new Date(rhState.savedAt).toLocaleString('pt-BR'):rhStorage.loaded?'Dados recuperados deste navegador':'Salvamento automático ativo')+' · '+n+' atividade(s) da equipe'+(!rhStorage.backupOk?' · cópia de segurança local indisponível':'');
 }
-function rhLoad(){
+async function rhLoad(){
+  const candidates=[];
   for(const key of [RH_LS,RH_LS+'_backup']){
-    try{const p=JSON.parse(localStorage.getItem(key)||'null');if(p&&Array.isArray(p.cases)){rhState={...p,deleted:p.deleted||{},version:2};rhStorage.loaded=true;if(p.view&&Number.isInteger(p.view.year)&&p.view.month>=0&&p.view.month<12){rhYear=p.view.year;rhMonthIndex=p.view.month;}rhMonthlyRolloverCheck();return;}}catch(e){}
+    try{const p=JSON.parse(localStorage.getItem(key)||'null');if(p&&Array.isArray(p.cases))candidates.push(p);}catch(e){}
   }
+  try{const p=JSON.parse(await rhDatabase('readonly')||'null');if(p&&Array.isArray(p.cases))candidates.push(p);}catch(e){}
+  candidates.sort((a,b)=>(Date.parse(b.savedAt)||0)-(Date.parse(a.savedAt)||0));
+  const p=candidates[0];
+  if(p){rhState={...p,deleted:p.deleted||{},version:2};rhStorage.loaded=true;rhSnapshotClock=Date.parse(p.savedAt)||0;if(p.view&&Number.isInteger(p.view.year)&&p.view.month>=0&&p.view.month<12){rhYear=p.view.year;rhMonthIndex=p.view.month;}}
   rhMonthlyRolloverCheck();
 }
 function rhTrackChanges(c){
@@ -1929,6 +1973,8 @@ function rhExport(){
   const wb=XLSX.utils.book_new();addStyledSheet(wb,RH_SOURCE,rows,[18,56,18,14,23,14,48,15,34,24,28,16]);XLSX.writeFile(wb,'Calendario_RH_visao_'+stamp()+'.xlsx');
 }
 function rhBind(){
+  document.getElementById('rhRetrySave').onclick=()=>rhPersist();
+  window.addEventListener('beforeunload',e=>{if(rhStorage.pending&&!rhStorage.ok){e.preventDefault();e.returnValue='';}});
   document.getElementById('rhReadExcel').onclick=()=>document.getElementById('rhExcelFile').click();
   document.getElementById('rhExcelFile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)rhImportFile(f);};
   document.getElementById('rhSearch').oninput=e=>{rhFilters.search=e.target.value;rhPage=0;render();};
@@ -1947,14 +1993,16 @@ function rhBind(){
 
 
 /* ===================== INIT ===================== */
-(function init(){
+(async function init(){
+  const rhNavButtons=[...document.querySelectorAll('#tabs button')];rhNavButtons.forEach(b=>b.disabled=true);
+  document.getElementById('app').innerHTML='<p class="rh-caption">Recuperando as atividades salvas neste navegador…</p>';
   const now=new Date();curYear=now.getFullYear();curMonth=now.getMonth();selDay=todayYMD();
-  rhLoad();loadState();
+  await rhLoad();loadState();
   const rollMsg=monthlyRolloverCheck();                 // virada automatica de mes (recorrentes concluidos -> pendentes)
   allDoneFlag=(state.cases.length>0&&state.cases.every(c=>c.status==='concluido'));
-  bind();rhBind();render();
+  bind();rhBind();render();rhNavButtons.forEach(b=>b.disabled=false);
   if(rollMsg)setTimeout(()=>toast(rollMsg),450);
-  if(!storageAvailable()){setTimeout(warnNoStorage,700);}
+  if(!storageAvailable()){setTimeout(()=>{if(VIEW==='rh-calendar')rhShowStorageStatus();else warnNoStorage();},700);}
 })();
 </script>
 </body>
